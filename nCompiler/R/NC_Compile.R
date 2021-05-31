@@ -38,7 +38,6 @@ nCompile_nClass <- function(NC,
   ## we leave that to the user.  E.g. That might set endStage even
   ## earlier.
   stopAfterRcppPacket <- isTRUE(dotArgs$stopAfterRcppPacket)
-
   controlFull <- updateDefaults(
     get_nOption('compilerOptions'),
     control
@@ -72,7 +71,7 @@ nCompile_nClass <- function(NC,
 
   if(stopAfterRcppPacket) 
     return(NC)
-  
+
   newCobjFun <- cpp_nCompiler(RcppPacket,
                               dir = dir,
                               cacheDir = cacheDir,
@@ -80,24 +79,28 @@ nCompile_nClass <- function(NC,
                               write = !NFcompilerMaybeStop('writeCpp', controlFull),
                               compile = !NFcompilerMaybeStop('compileCpp', controlFull),
                               ...)
+
   if(NFcompilerMaybeStop('compileCpp', controlFull)) {
     return(newCobjFun)
   }
-  
+
   newDLLenv <- make_DLLenv()
   newCobjFun <- setup_DLLenv(newCobjFun, newDLLenv)
   if(length(newCobjFun) != 1) 
     warning("There may be a problem with number of returned functions in nCompile_nClass.")
-  newCobjFun <- wrapNCgenerator_for_DLLenv(newCobjFun, newDLLenv)
-  
+
   interface <- match.arg(interface)
+  wrappedFn <- wrapNCgenerator_for_DLLenv(newCobjFun, newDLLenv)
+  # Replace with:  return(setup_nClass_interface(interface, ?, wrappedFn, env))
+
   if(interface == "generic")
-    return(newCobjFun)
+    return(wrappedFn)
   ## To Do: Only "generic" works when more than one function will be returned from sourceCpp in cpp_nCompiler.  That occurs with serialization turned on.
-  fullInterface <- build_compiled_nClass(NC, newCobjFun, env = env)
+    fullInterface <- build_compiled_nClass(NC, wrappedFn, env = env)
+
   if(interface == "full")
     return(fullInterface)
   ## interface is "both"
-  return(list(full = fullInterface, generic = newCobjFun))
+  return(list(full = fullInterface, generic = wrappedfn))
 }
 
