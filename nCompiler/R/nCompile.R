@@ -62,30 +62,6 @@ nCompile <- function(...,
   compiledFn <- setup_DLLenv(ans, newDLLenv, returnList)
   #'compiledFn' now a list of functions been gleaned of any DLL-specific function/environment.
   
-  setup_nClass_interface <- function(interfaceType,
-                                     NC,
-                                     wrappedFn,
-                                     env) {
-    if(interfaceType == "generic")
-      return(wrappedFn)
-    fullInterface <- try(build_compiled_nClass(NC,
-                                               wrappedFn,
-                                               env = env))
-    if(inherits(fullInterface, "try-error")) {
-      warning("There was a problem building a full nClass interface.\n",
-              "Attempting to return a generic interface.\n")
-      return(wrappedFn)
-    }
-    if(interfaceType == "full")
-      return(fullInterface)
-    else if(interfaceType == "both")
-      return(list(full = fullInterface, generic = wrappedFn))
-
-    warning(paste0("Invalid interface type ", interfaceType, " requested.\n",
-                   "Returning a full interface.\n"))
-    fullInterface
-  }
-  
   ## Next we re-order results using input names,
   ## in case the ordering in the C++ code or in Rcpp's handling
   ## does not match order of units.
@@ -96,6 +72,7 @@ nCompile <- function(...,
     if (isNF(unit)) NFinternals(unit)$cpp_code_name
     else unit$classname
   })
+
   if(is.list(compiledFn)) {
     newNames <- names(compiledFn)
     SEXPgen_names <- paste0("new_", cpp_names)
@@ -128,3 +105,30 @@ nCompile <- function(...,
   }
   compiledFn
 }
+
+
+setup_nClass_interface <- function(interfaceType,
+                                   NC,
+                                   wrappedFn,
+                                   env) {
+  if(interfaceType == "generic")
+    return(wrappedFn)
+  fullInterface <- try(build_compiled_nClass(NC,
+                                               wrappedFn,
+                                               env = env))
+  if(inherits(fullInterface, "try-error")) {
+    warning("There was a problem building a full nClass interface.\n",
+            "Attempting to return a generic interface.\n")
+    return(wrappedFn)
+  }
+
+  if(interfaceType == "full")
+    return(fullInterface)
+  else if(interfaceType == "both")
+    return(list(full = fullInterface, generic = wrappedFn))
+
+  warning(paste0("Invalid interface type ", interfaceType, " requested.\n",
+                   "Returning a full interface.\n"))
+  fullInterface
+}
+  

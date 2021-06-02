@@ -17,6 +17,15 @@ compileLoop <- function(units,
   ## names(units) should be fully populated and unique. TO-DO: check.
   RcppPacket_list <- vector(length = length(units), mode = "list")
   for(i in seq_along(units)) {
+
+    if (!combined) {
+      if (!identical(nCompiler:::Rname2CppName(unitName[[i]]), unitName[[i]])) {
+        warning(paste0("The nFunction name ", unitName[[i]], " isn't valid for ",
+                       "C++.\n Using the modified name ", 
+                       Rname2CppName(unitName[[i]]), " instead."))
+      }
+    }
+    
     if (unitTypes[i] == "nF") {
       unitResult <-
         if (combined)
