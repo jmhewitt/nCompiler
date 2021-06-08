@@ -55,6 +55,12 @@ get_DLLenv <- function(obj) {
 }
 
 
+# Returns a list of reserved auxiliary function names. For now limited to serialization utilities.
+getAuxFunNames <- function() {
+    getSerialFunNames()
+}
+
+
 # Filters compiled function list for specified names of helper functions pertaining to DLL.
 # Filtered-out functions moved to new DLL environment.
 # Returns filtered list or singleton.
@@ -63,7 +69,7 @@ setup_DLLenv <- function(ans, newDLLenv, returnList = FALSE) {
     return(ans) # Why return on singleton?
 
   # Serialization-specific:  should be initialized elsewhere, according to options.
-  namesForDLLenv <- getSerialFunNames()
+  namesForDLLenv <- getAuxFunNames()
 
   keep <- rep(TRUE, length(ans))
   for(DLLname in namesForDLLenv) {
@@ -105,37 +111,6 @@ wrapNCgenerator_for_DLLenv <- function(newObjFun, newDLLenv) {
   wrappedNewObjFun
 }
 
-new.serialObjectEnv <- function(serial_data = NULL, dll_env) {
-  ans <- new.env()
-  if(!missing(dll_env)) parent.env(ans) <- dll_env
-  ans$serial <- serial_data
-  class(ans) <- "serialObjectEnv"
-  ans
-}
-
-is.serialObjectEnv <- function(env) {
-  ## The checks here may be over-kill.
-  ## We may be able to rely solely on the class label.
-  if(!is.environment(env)) return(FALSE)
-  if(!exists("serial", where = env)) return(FALSE)
-  if(class(env) != "serialObjectEnv") return(FALSE)
-  TRUE
-}
-
-getSerial <- function(env) {
-  ## If env$extptr ever changes, the C++ code for as< std::shared_ptr< T > > should also be changed.
-  ## This is written as a custom Exporter added to namespace Rcpp::traits
-  if(!is.serialObjectEnv(env))
-    stop("env should be a serialObjectEnv")
-  env$serial
-}
-
-setSerial <- function(env, serial_data) {
-  if(!is.serialObjectEnv(env))
-    stop("env should be a serialObjectEnv")
-  env$serial <- serial_data
-  env
-}
 
 ## Next two will be deprecated
 

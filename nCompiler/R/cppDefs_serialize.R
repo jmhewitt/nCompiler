@@ -1,25 +1,18 @@
 
-# Returns the names of the internally-generated serialization helper functions.
-getSerialFunNames <- function() {
-  c("nComp_serialize_", "nComp_deserialize_", "new_serialization_mgr")
-}
-
-
 
 # This is called from nCompile or nCompile_nClass
-make_serialization_cppDef <- function(funNames = getSerialFunNames(),
-                                      defName = "serialization") {
+make_serialization_cppDef <- function(defName = "serialization") {
   ans <-
     cppMacroCallClass$new(
       Hincludes = nCompilerIncludeFile("nCompiler_serialization_mgr.h"),
       cppContent = paste0(
         "// [[Rcpp::export]]\n",
-        "SEXP ", funNames[3], " ( ) {\n",
+        "SEXP ", getSerializationManagerName(), " ( ) {\n",
         "return(loadedObjectEnv(new_nCompiler_object<serialization_mgr>()));\n",
         "}\n",
         "\n",
         "//[[Rcpp::export]]\n",
-                          "RawVector ", funNames[1],
+                          "RawVector ", getSerializerFunName(),
                           "(SEXP Sfrom) {\n",
                           "genericInterfaceBaseC *baseobj =\n",
                           "reinterpret_cast<genericInterfaceBaseC*>(reinterpret_cast<shared_ptr_holder_base*>(R_ExternalPtrAddr(Sfrom))->get_ptr());\n",
@@ -38,7 +31,7 @@ make_serialization_cppDef <- function(funNames = getSerialFunNames(),
                           "}\n",
                           "\n",
                           "//[[Rcpp::export]]\n",
-                          "SEXP ", funNames[2],
+                          "SEXP ", getDeserializerFunName(),
                           "(RawVector src) {\n",
                           "  std::stringstream ss;\n",
                           "  ss.write(reinterpret_cast<char*>(&src[0]), src.size());\n",

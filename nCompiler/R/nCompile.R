@@ -114,8 +114,8 @@ setup_nClass_interface <- function(interfaceType,
   if(interfaceType == "generic")
     return(wrappedFn)
   fullInterface <- try(build_compiled_nClass(NC,
-                                               wrappedFn,
-                                               env = env))
+                                             wrappedFn,
+                                             env = env))
   if(inherits(fullInterface, "try-error")) {
     warning("There was a problem building a full nClass interface.\n",
             "Attempting to return a generic interface.\n")

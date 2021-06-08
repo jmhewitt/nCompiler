@@ -9,22 +9,23 @@
 
 #' @export
 nSerialize <- function(obj) {
-    return(serialize(obj, NULL, FALSE, FALSE, refhook = serializeLOE))
+  return(serialize(obj, NULL, FALSE, FALSE, refhook = serializeLOE))
 }
 
 
-getSerializationMgr <- function(LOE) {
-    parent.env(LOE)$new_serialization_mgr
+# connOrRaw is either a connection or a Raw vector.
+nDeserialize <- function(connOrRaw) {
+  return(unserialize(connOrRaw, refhook = deserialize))
 }
 
 
 serializeLOE <- function(LOE) {
-    if (class(LOE) != "loadedObjectEnv") {
-        print(paste("Advisory:  not serializing reference class ", class(LOE)))
-        newIndex <- -1
-    }
-    else {
-        newIndex <- method(getSerializationMgr(LOE)(), "add_extptr")(nCompiler:::getExtptr(LOE))
-    }
-    as.character(newIndex)
+  if (class(LOE) != "loadedObjectEnv") {
+    print(paste("Advisory:  not serializing reference class ", class(LOE)))
+    newIndex <- -1
+  }
+  else {
+    newIndex <- method(getSerializationMgr(LOE)(), "add_extptr")(nCompiler:::getExtptr(LOE))
+  }
+  as.character(newIndex)
 }

@@ -4,52 +4,6 @@
 # function, then instantiates and returns a new loadedObjectEnv with the
 # contents
 
-get_serialize_fun <- function(obj) {
-  parent.env(obj)$nComp_serialize_
-}
-
-get_deserialize_fun <- function(obj) {
-  parent.env(obj)$nComp_deserialize_
-}
-
-serialize_nComp_object <- function(obj, serializer) {
-  if(!is.loadedObjectEnv(obj))
-    stop("obj must be a loadedObjectEnv.")
-  if(is.null(getExtptr(obj))) {
-    warning("No nComp serialization to be done.")
-    return(obj)
-  } else {
-    if(missing(serializer)) {
-      serializer <-get_serialize_fun(obj)
-      if(!is.function(serializer))
-        stop("Function for serializing not found not found.")
-    }
-    serial_data <- serializer(getExtptr(obj))
-
-    soe <- new.serialObjectEnv(serial_data, get_DLLenv(obj))
-    return(soe)
-  }
-}
-
-# Internal function used by read_nClass() which calls the provided
-# deserialization function and applies it to a loadedObjectEnv
-deserialize_nComp_object <- function(obj, deserializer) {
-  if(!is.serialObjectEnv(obj))
-    stop("obj must be a serialObjectEnv.")
-  if(!(class(obj$serial) == "raw"))
-      stop("serialized content must have class 'raw'")
-  if(missing(deserializer)) {
-    deserializer <- get_deserialize_fun(obj)
-    if(!is.function(deserializer))
-      stop("Function for serializing not found not found.")
-  }
-  newXptr <- deserializer(obj$serial)
-  newLOE <- new.loadedObjectEnv(newXptr)
-  parent.env(newLOE) <- parent.env(obj)
-  newLOE
-}
-
-
 loadDLLenv <- function(newLOE, loadands) {
   for (DLLname in getSerialFunNames()) {
     found <- grepl(DLLname, names(loadands))
@@ -174,34 +128,32 @@ save_nClass <- function(ncObj,
   ## }
   
   if (is.loadedObjectEnv(ncObj)) {
-    serialized <- serialize_nComp_object(ncObj)
-    listToSerialize <- list(CppObj = serialized$serialized, 
+    soe <- serialize_nComp_object(ncObj)
+    listToSerialize <- list(CppObj = soe$serial,
                             constructedPackage = TRUE,
                             classname = classname,
                             package.name = package.name)
-    saveRDS(listToSerialize, file)
-  } else if (isNC(ncObj)) {
-    serialized <- serialize_nComp_object(ncObj$private$CppObj, serialize_fn)
+  } else if (isNC(ncObj)) { # Callee expects LOE so will throw error.
+    soe <- serialize_nComp_object(ncObj$private$CppObj, serialize_fn)
     listToSerialize <- list(full = ncObj, 
-                            CppObj = serialized$serialized,
+                            CppObj = soe$serial,
                             constructedPackage = TRUE,
                             classname = classname,
                             package.name = package.name)
-    
-    saveRDS(listToSerialize, file)
     
   } else {
     stop("Object to save, 'ncObj', must be an instance of an nClass.")
   }
+  saveRDS(listToSerialize, file)
   
   if (createPackage) {
-    writePackage(ncDef,
+    nWritePackage(ncDef,
                  package.name = package.name,
                  dir = dir,
                  control = list(export = FALSE), 
                  modify = FALSE,
                  memberData = list(classname = classname))
-    buildPackage(package.name = package.name, 
+    nBuildPackage(package.name = package.name, 
                  dir = dir, lib = lib, load = FALSE)
   }
   invisible(NULL)
@@ -259,8 +211,8 @@ read_nClass <- function(file, lib = .libPaths()[1]) {
   }
 
   deserialized <- deserialize_nComp_object(
-    new.loadedObjectEnv(savedObj$CppObj), # earlier invocation:  (serialized = savedObj$CppObj)
-    nComp_deserialize_fn = getDeserializerName(savedObj))
+    new.loadedObjectEnv(savedObj$CppObj),
+    getDeserializerName(savedObj))
 
   # library(savedObj$package.name, character.only = TRUE, lib = lib)
   # loadEnv <- new.env()
@@ -275,9 +227,123 @@ read_nClass <- function(file, lib = .libPaths()[1]) {
 }
 
 
+# Internal function used by read_nClass() which calls the provided
+# deserialization function and applies it to a loadedObjectEnv
+deserialize_nComp_object <- function(loe, deserializer) {
+  if(!is.serialObjectEnv(loe))
+    stop("obj must be a serialObjectEnv.")
+  if (class(loe$serial) != "raw")
+    stop("serialized content must have class 'raw'")
+  if (missing(deserializer)) {
+    deserializer <- get_deserialize_fun(loe)
+  }
+  newXptr <- deserializer(loe$serial)
+  newLOE <- new.loadedObjectEnv(newXptr)
+  parent.env(newLOE) <- parent.env(loe)
+  newLOE
+}
+
+
+get_deserialize_fun <- function(loe) {
+  #  deserializer <- parent.env(loe)$nComp_deserialize_
+  deserializer <- getElement(parent.env(loe), getDeserializerFunName())
+  if(!is.function(deserializer))
+      stop(paste0("Deserialization function ", getDeserializerFunName(), " not found."))
+  deserializer
+}
+
+
+getDeserializerFunName <- function() {
+  "nComp_deserialize_"
+}
+
+
+getSerializerFunName <- function() {
+  "nComp_serialize_"
+}
+
+
+getSerializationManagerName <- function() {
+  "new_serialization_mgr"
+}
+
+
+getSerializationMgr <- function(LOE) {
+  if (class(LOE) != "loadedObjectEnv") {
+    stop(paste("Serialization manager not present in class ", class(LOE)))
+  }
+  #  parent.env(LOE)$new_serialization_mgr
+  getElement(parent.env(LOE), getSerializationManagerName())
+}
+
+
+# Returns the names of the internally-generated serialization helper functions.
+getSerialFunNames <- function() {
+  c(getSerializerFunName(), getDeserializerFunName(), getSerializationManagerName())
+}
+
 #' Constructs the name of the deserializer from the package and class name.
 getDeserializerName <- function(loadedObj) {
-  utils::getFromNamespace(paste0("nComp_deserialize_", Rname2CppName(loadedObj$classname)),
+  utils::getFromNamespace(paste0(getDeserializerFunName(), Rname2CppName(loadedObj$classname)),
                           loadedObj$package.name)
 }
 
+
+get_serialize_fun <- function(obj) {
+  #  parent.env(obj)$nComp_serialize_
+  getElement(parent.env(obj), getSerializerFunName())
+}
+
+
+serialize_nComp_object <- function(obj, serializer) {
+  if(!is.loadedObjectEnv(obj))
+    stop("obj must be a loadedObjectEnv.")
+  if(is.null(getExtptr(obj))) {
+    warning("No nComp serialization to be done.")
+    return(obj)
+  } else {
+    if(missing(serializer)) {
+      serializer <-get_serialize_fun(obj)
+      if(!is.function(serializer))
+        stop("Function for serializing not found not found.")
+    }
+    serial_data <- serializer(getExtptr(obj))
+
+    soe <- new.serialObjectEnv(serial_data, get_DLLenv(obj))
+    return(soe)
+  }
+}
+
+
+new.serialObjectEnv <- function(serial_data = NULL, dll_env) {
+  ans <- new.env()
+  if(!missing(dll_env)) parent.env(ans) <- dll_env
+  ans$serial <- serial_data
+  class(ans) <- "serialObjectEnv"
+  ans
+}
+
+
+is.serialObjectEnv <- function(env) {
+  ## The checks here may be over-kill.
+  ## We may be able to rely solely on the class label.
+  if(!is.environment(env)) return(FALSE)
+  if(!exists("serial", where = env)) return(FALSE)
+  if(class(env) != "serialObjectEnv") return(FALSE)
+  TRUE
+}
+
+getSerial <- function(env) {
+  ## If env$extptr ever changes, the C++ code for as< std::shared_ptr< T > > should also be changed.
+  ## This is written as a custom Exporter added to namespace Rcpp::traits
+  if(!is.serialObjectEnv(env))
+    stop("env should be a serialObjectEnv")
+  env$serial
+}
+
+setSerial <- function(env, serial_data) {
+  if(!is.serialObjectEnv(env))
+    stop("env should be a serialObjectEnv")
+  env$serial <- serial_data
+  env
+}
