@@ -5,17 +5,10 @@ library(nCompiler)
 
 set_nOption("serialize", TRUE)
 
-# nc1, nc2, etc., are C++ objects.
-# '->' dentoes contains / points to, for nc objects.
-# Rnc1 is the R object containing nc1:  Rnc1 -> nc1.
-
 # Chains:
-#  Rnc1 -> nc1 -> nc2 -> nc3 :  nSerialize(Rnc1)
-# As above, but with nc2 and/or nc3 with same or different class as nc1
-
-# Rnc1 -> nc1 -> nc2 -> nc3.  Also Rnc2 ->nc2 and/or Rnc3 -> nc3:
-#  nSerialize(Rnc1 and/or Rnc2 and/or Rnc3)
-
+#  Rnc1 -> nc1 -> nc2 -> nc3.  Also Rnc2 ->nc2 and/or Rnc3 -> nc3:
+#    nSerialize(Rnc1 and/or Rnc2 and/or Rnc3)
+#
 # As above, but with permutations of which classes are identical/different.
 
 # Cyclic cases:
@@ -52,6 +45,9 @@ checkInit = 7154
 comp <- nCompile(Cnc, Rnc, interfaces = list(Cnc="generic", Rnc="generic"))
 
 # Chain test 1:
+#
+#  Rnc1 -> nc3 -> nc2 -> nc1 :  nSerialize(Rnc1)
+#
 nc1 <- comp[[1]]()
 nc2 <- nc1
 nc3 <- nc2
@@ -81,21 +77,22 @@ serialization_mgr <- nCompiler:::getSerializationMgr(Rnc1)()
 serial_index <- method(serialization_mgr, 'add_extptr')(nCompiler:::getExtptr(Rnc1))
 serial_index
 
+# Serializes the R container.
 soeMgr <- serialize_nComp_object(serialization_mgr, serializer = nCompiler:::get_serialize_fun(Rnc1))
 
 desoeMgr <- deserialize_nComp_object(soeMgr, nCompiler:::get_deserialize_fun(Rnc1) )
 xptr <- method(desoeMgr, "get_extptr")(serial_index)
-LOE2 <- new.loadedObjectEnv(xptr)
+LOE <- new.loadedObjectEnv(xptr)
 
 # Does the scalar initialization survive serdes?
-paste0(checkInit, " =?= ", value(LOE2, 'check'))
+paste0(checkInit, " =?= ", value(LOE, 'check'))
 
 # Have the reference members survived?
-paste0(CnumInit, " =?= ", value(value(LOE2, 'cnc'), 'Cnum'))
-paste0(CintInit, " =?= ", value(value(LOE2, 'cnc'), 'Cint'))
+paste0(CnumInit, " =?= ", value(value(LOE, 'cnc'), 'Cnum'))
+paste0(CintInit, " =?= ", value(value(LOE, 'cnc'), 'Cint'))
 
 # Does the class member surive as an aggregate?
-cncDeserial <- value(LOE2, 'cnc')
+cncDeserial <- value(LOE, 'cnc')
 paste0(CnumInit, " =?= ", value(cncDeserial, 'Cnum'))
 paste0(CintInit, " =?= ", value(cncDeserial, 'Cint'))
 
