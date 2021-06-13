@@ -68,11 +68,8 @@ setup_DLLenv <- function(ans, newDLLenv, returnList = FALSE) {
   if (!is.list(ans))
     return(ans) # Why return on singleton?
 
-  # Serialization-specific:  should be initialized elsewhere, according to options.
-  namesForDLLenv <- getAuxFunNames()
-
   keep <- rep(TRUE, length(ans))
-  for(DLLname in namesForDLLenv) {
+  for(DLLname in getAuxFunNames()) {
     found <- grepl(DLLname, names(ans))
     if(any(found)) {
       i <- which(found)
@@ -82,9 +79,8 @@ setup_DLLenv <- function(ans, newDLLenv, returnList = FALSE) {
       newDLLenv[[DLLname]] <- ans[[i]]
     }
   }
-
-  if (!all(keep)) # unneeded guard
-    ans <- ans[keep]
+  #if (!all(keep)) # unneeded guard
+  ans <- ans[keep]
 
   if (length(ans) != 1 || returnList)
     ans

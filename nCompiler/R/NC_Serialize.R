@@ -245,7 +245,6 @@ deserialize_nComp_object <- function(loe, deserializer) {
 
 
 get_deserialize_fun <- function(loe) {
-  #  deserializer <- parent.env(loe)$nComp_deserialize_
   deserializer <- getElement(parent.env(loe), getDeserializerFunName())
   if(!is.function(deserializer))
       stop(paste0("Deserialization function ", getDeserializerFunName(), " not found."))
@@ -272,8 +271,11 @@ getSerializationMgr <- function(LOE) {
   if (class(LOE) != "loadedObjectEnv") {
     stop(paste("Serialization manager not present in class ", class(LOE)))
   }
-  #  parent.env(LOE)$new_serialization_mgr
-  getElement(parent.env(LOE), getSerializationManagerName())
+  mgr <- getElement(parent.env(LOE), getSerializationManagerName())
+  if (is.null(mgr)) {
+    stop(paste0("Manager ", getSerializationManagerName(), " not found in parent environment."))
+  }
+  mgr
 }
 
 
@@ -289,29 +291,30 @@ getDeserializerName <- function(loadedObj) {
 }
 
 
-get_serialize_fun <- function(obj) {
-  #  parent.env(obj)$nComp_serialize_
-  getElement(parent.env(obj), getSerializerFunName())
+# Returns the serialization function associated with loe's parent environment.
+get_serialize_fun <- function(loe) {
+  serializer <- getElement(parent.env(loe), getSerializerFunName())
+  if(!is.function(serializer))
+    stop(paste0("Serializer ", getSerializerFunName(), " not found not found in parent environment."))
+  serializer
 }
 
 
-serialize_nComp_object <- function(obj, serializer) {
-  if(!is.loadedObjectEnv(obj))
+serialize_nComp_object <- function(loe, serializer) {
+  if(!is.loadedObjectEnv(loe))
     stop("obj must be a loadedObjectEnv.")
-  if(is.null(getExtptr(obj))) {
-    warning("No nComp serialization to be done.")
-    return(obj)
-  } else {
-    if(missing(serializer)) {
-      serializer <-get_serialize_fun(obj)
-      if(!is.function(serializer))
-        stop("Function for serializing not found not found.")
-    }
-    serial_data <- serializer(getExtptr(obj))
 
-    soe <- new.serialObjectEnv(serial_data, get_DLLenv(obj))
-    return(soe)
+  nCompObj <- getExtptr(loe)
+  if (is.null(nCompObj)) {
+    warning("No nCompile object to serialize")
+    return(loe)
   }
+
+  if (missing(serializer)) {
+    serializer <-get_serialize_fun(loe)
+  }
+
+  new.serialObjectEnv(serializer(nCompObj), get_DLLenv(loe))
 }
 
 

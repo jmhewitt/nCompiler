@@ -116,9 +116,6 @@ public:
     return(Sans);
   }
 
-  template<class Archive>
-    void _SERIALIZE_ ( Archive & archive );
-  
   SEXP make_deserialized_return_SEXP ( ) {
     shared_ptr<serialization_mgr> shared(this);
     SEXP Sans = PROTECT(return_nCompiler_object<serialization_mgr>(shared));
@@ -126,6 +123,10 @@ public:
 
     return Sans;
   }
+
+
+  template<class Archive>
+    void _SERIALIZE_ ( Archive & archive );
 };
 
 
