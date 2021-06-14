@@ -103,5 +103,3 @@ cncDeserial <- value(cnc2Deserial, 'cnc')
 paste0(CnumInit, " =?= ", value(cncDeserial, 'Cnum'))
 paste0(CintInit, " =?= ", value(cncDeserial, 'Cint'))
 
-#########
-##
