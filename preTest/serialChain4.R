@@ -6,11 +6,12 @@ library(nCompiler)
 set_nOption("serialize", TRUE)
 
 #
-# Chain test 3.
+# Chain test 4.
 #
-# Rnc1 -> nc1 -> nc2 -> nc3; Rnc2 -> nc2 and/or Rnc3 -> nc3:
-#                                        #
-#  serialize:  Rnc1 and/or Rnc2 and/or Rnc3
+# Rnc1 -> nc1 -> nc2 -> nc3; Rnc2 -> nc2 and Rnc3 -> nc3.
+#  nc1 and nc2 are distinct classes.
+#
+#  serialize:  Rnc1, Rnc2, Rnc3.
 #
 Cnc <- nClass(
   classname = "Cnc",
@@ -22,8 +23,8 @@ Cnc <- nClass(
 CintInit = 273
 CnumInit = 1.2
 
-Rnc <- nClass(
-  classname = "Rnc",
+Rnc1 <- nClass(
+  classname = "Rnc1",
   Rpublic = list(),
   Cpublic = list(
     cnc = 'Cnc',
@@ -32,34 +33,59 @@ Rnc <- nClass(
 )
 checkInit = 7154
 
-comp <- nCompile(Cnc, Rnc, interfaces = list(Cnc = "generic", Rnc = "generic"))
+Cnc2 <- nClass(
+  classname = "Cnc2",
+  Cpublic = list(
+    cnc = 'Cnc',
+    Clog = 'logicalScalar'
+  )
+)
+ClogInit <- TRUE
 
-nc3 <- comp[[1]]()
+Rnc2 <- nClass(
+  classname = "Rnc2",
+  Rpublic = list(),
+  Cpublic = list(
+    cnc2 = 'Cnc2',
+    check = 'integerScalar'
+  )
+)
 
-Rnc1 <- comp[[2]]()
-Rnc2 <- comp[[2]]()
-Rnc3 <- comp[[2]]()
+comp <- nCompile(Cnc, Cnc2, Rnc1, Rnc2, interfaces = list(Cnc="generic", Cnc2 = "generic", Rnc1 = "generic", Rnc2 = "generic"))
 
-nc2 <- nc3
-nc1 <- nc2
+nc1 <- comp[[1]]()
+nc2 <- comp[[2]]()
+
+Rnc1 <- comp[[3]]()
+Rnc2 <- comp[[4]]()
+Rnc3 <- comp[[3]]()
+
+nc3 <- nc1
 
 value(Rnc1, 'check') <- checkInit
 value(Rnc2, 'check') <- checkInit
 value(Rnc3, 'check') <- checkInit
 
 value(Rnc3, 'cnc') <- nc3
-value(Rnc2, 'cnc') <- nc2
+value(Rnc2, 'cnc2') <- nc2
 value(Rnc1, 'cnc') <- nc1
 
-value(nc3, 'Cint') <- CintInit
-value(nc3, 'Cnum') <- CnumInit
+value(nc1, 'Cint') <- CintInit
+value(nc1, 'Cnum') <- CnumInit
+
+value(nc2, 'Clog') <- ClogInit
+value(nc2, 'cnc') <- comp[[1]]() # Allocates aggregate member.
+value(value(nc2, 'cnc'), 'Cint') <- CintInit
+value(value(nc2, 'cnc'), 'Cnum') <- CnumInit
 
 # Are the initialized values accessible?
 paste0(CnumInit, " =?= ", value(value(Rnc1, 'cnc'), 'Cnum'))
 paste0(CintInit, " =?= ", value(value(Rnc1, 'cnc'), 'Cint'))
 
-paste0(CnumInit, " =?= ", value(value(Rnc2, 'cnc'), 'Cnum'))
-paste0(CintInit, " =?= ", value(value(Rnc2, 'cnc'), 'Cint'))
+# Are the initialized values accessible?
+paste0(ClogInit, " =?= ", value(value(Rnc2, 'cnc2'), 'Clog'))
+paste0(CnumInit, " =?= ", value(value(value(Rnc2, 'cnc2'), 'cnc'), 'Cnum'))
+paste0(CintInit, " =?= ", value(value(value(Rnc2, 'cnc2'), 'cnc'), 'Cint'))
 
 paste0(CnumInit, " =?= ", value(value(Rnc3, 'cnc'), 'Cnum'))
 paste0(CintInit, " =?= ", value(value(Rnc3, 'cnc'), 'Cint'))
@@ -71,9 +97,13 @@ cncPreserial1 <- value(Rnc1, 'cnc')
 paste0(CnumInit, " =?= ", value(cncPreserial1, 'Cnum'))
 paste0(CintInit, " =?= ", value(cncPreserial1, 'Cint'))
 
-cncPreserial2 <- value(Rnc2, 'cnc')
-paste0(CnumInit, " =?= ", value(cncPreserial2, 'Cnum'))
-paste0(CintInit, " =?= ", value(cncPreserial2, 'Cint'))
+# Is the aggregate accessible?
+cncPreserial2 <- value(Rnc2, 'cnc2')
+
+# Do the aggregate members preserve initial values?
+paste0(ClogInit, " =?= ", value(cncPreserial2, 'Clog'))
+paste0(CnumInit, " =?= ", value(value(cncPreserial2, 'cnc'), 'Cnum'))
+paste0(CintInit, " =?= ", value(value(cncPreserial2, 'cnc'), 'Cint'))
 
 cncPreserial3 <- value(Rnc3, 'cnc')
 paste0(CnumInit, " =?= ", value(cncPreserial3, 'Cnum'))
@@ -103,7 +133,7 @@ xptr <- method(desoeMgr, "get_extptr")(serial_index)
 LOE3 <- new.loadedObjectEnv(xptr)
 
 
-# Does the scalar initialization survive serdes?
+# Do the scalar initializations survive serdes?
 paste0(checkInit, " =?= ", value(LOE1, 'check'))
 paste0(checkInit, " =?= ", value(LOE2, 'check'))
 paste0(checkInit, " =?= ", value(LOE3, 'check'))
@@ -111,17 +141,18 @@ paste0(checkInit, " =?= ", value(LOE3, 'check'))
 # Have the members survived as values?
 paste0(CnumInit, " =?= ", value(value(LOE1, 'cnc'), 'Cnum'))
 paste0(CintInit, " =?= ", value(value(LOE1, 'cnc'), 'Cint'))
-paste0(CnumInit, " =?= ", value(value(LOE2, 'cnc'), 'Cnum'))
-paste0(CintInit, " =?= ", value(value(LOE2, 'cnc'), 'Cint'))
+paste0(CnumInit, " =?= ", value(value(value(LOE2, 'cnc2'), 'cnc'), 'Cnum'))
+paste0(CintInit, " =?= ", value(value(value(LOE2, 'cnc2'), 'cnc'), 'Cint'))
 paste0(CnumInit, " =?= ", value(value(LOE3, 'cnc'), 'Cnum'))
 paste0(CintInit, " =?= ", value(value(LOE3, 'cnc'), 'Cint'))
 
-# Do members surive as aggregates?
+# Have members surived as aggregates?
 cncDeserial1 <- value(LOE1, 'cnc')
 paste0(CnumInit, " =?= ", value(cncDeserial1, 'Cnum'))
 paste0(CintInit, " =?= ", value(cncDeserial1, 'Cint'))
 
-cncDeserial2 <- value(LOE2, 'cnc')
+cncDeserial2 <- value(LOE2, 'cnc2')
+cnc2Deserial <- value(cncDeserial2, 'cnc')
 paste0(CnumInit, " =?= ", value(cncDeserial2, 'Cnum'))
 paste0(CintInit, " =?= ", value(cncDeserial2, 'Cint'))
 
