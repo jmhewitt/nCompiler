@@ -5,22 +5,23 @@ library(nCompiler)
 
 set_nOption("serialize", TRUE)
 
-# Chains:
+# Serializes and deserializes a single object.
+# Returns the deserialized LOE.
+# Makes a serialization manager from whatever DLL-charged LOE is handy.
+# Anything constructed using a generic interface should suffice.
+serdes <- function(obj) {
+  mgr <- nCompiler:::getSerializationMgr(obj)()
+  serial_index <- method(mgr, 'add_extptr')(nCompiler:::getExtptr(obj))
+  soeMgr <- serialize_nComp_object(mgr, serializer = nCompiler:::get_serialize_fun(obj))
+  desoeMgr <- deserialize_nComp_object(soeMgr, nCompiler:::get_deserialize_fun(obj))
+  new.loadedObjectEnv(method(desoeMgr, "get_extptr")(serial_index))
+}
+
+
+# Chain 1:
 #  Rnc1 -> nc1 -> nc2 -> nc3.  Also Rnc2 ->nc2 and/or Rnc3 -> nc3:
 #    nSerialize(Rnc1 and/or Rnc2 and/or Rnc3)
 #
-# As above, but with permutations of which classes are identical/different.
-
-# Cyclic cases:
-#          Rnc1 -> nc2 -> {nc2, nc3} -> nc4:  nSerialize(Rnc1)
-# {} denotes that all elments pointed to by arrow.
-
-# Biderectional cases:
-
-#  Rnc1 -> nc1 ->nc2 -> nc1 and Rnc2 -> nc2 (-> nc1 -> nc2)
-#  Permutations of this.
-
-#Creative extensions of these.
 Cnc <- nClass(
   classname = "Cnc",
   Cpublic = list(
@@ -70,19 +71,7 @@ cncPreserial # Should not be NULL.
 paste0(CnumInit, " =?= ", value(cncPreserial, 'Cnum'))
 paste0(CintInit, " =?= ", value(cncPreserial, 'Cint'))
 
-# Makes a serialization manager from whatever DLL-charged LOE is handy.
-# Anything constructed using a generic interface should suffice.
-serialization_mgr <- nCompiler:::getSerializationMgr(Rnc1)()
-
-serial_index <- method(serialization_mgr, 'add_extptr')(nCompiler:::getExtptr(Rnc1))
-serial_index
-
-# Serializes the R container.
-soeMgr <- serialize_nComp_object(serialization_mgr, serializer = nCompiler:::get_serialize_fun(Rnc1))
-
-desoeMgr <- deserialize_nComp_object(soeMgr, nCompiler:::get_deserialize_fun(Rnc1) )
-xptr <- method(desoeMgr, "get_extptr")(serial_index)
-LOE <- new.loadedObjectEnv(xptr)
+LOE <- serdes(Rnc1)
 
 # Does the scalar initialization survive serdes?
 paste0(checkInit, " =?= ", value(LOE, 'check'))
@@ -96,5 +85,4 @@ cncDeserial <- value(LOE, 'cnc')
 paste0(CnumInit, " =?= ", value(cncDeserial, 'Cnum'))
 paste0(CintInit, " =?= ", value(cncDeserial, 'Cint'))
 
-#########
-##
+

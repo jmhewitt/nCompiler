@@ -120,7 +120,7 @@ LOE1 <- new.loadedObjectEnv(xptr)
 
 mgr <- nCompiler:::getSerializationMgr(Rnc2)()
 serial_index <- method(mgr, 'add_extptr')(nCompiler:::getExtptr(Rnc2))
-soeMgr <- serialize_nComp_object(mgr, serializer = nCompiler:::get_serialize_fun(Rnc3))
+soeMgr <- serialize_nComp_object(mgr, serializer = nCompiler:::get_serialize_fun(Rnc2))
 desoeMgr <- deserialize_nComp_object(soeMgr, nCompiler:::get_deserialize_fun(Rnc2) )
 xptr <- method(desoeMgr, "get_extptr")(serial_index)
 LOE2 <- new.loadedObjectEnv(xptr)
@@ -159,3 +159,14 @@ paste0(CintInit, " =?= ", value(cncDeserial2, 'Cint'))
 cncDeserial3 <- value(LOE3, 'cnc')
 paste0(CnumInit, " =?= ", value(cncDeserial3, 'Cnum'))
 paste0(CintInit, " =?= ", value(cncDeserial3, 'Cint'))
+
+
+# Serializes and deserializes a single object.
+# Returns the deserialized LOE.
+serdes <- function(obj) {
+  mgr <- nCompiler:::getSerializationMgr(obj)()
+  serial_index <- method(mgr, 'add_extptr')(nCompiler:::getExtptr(obj))
+  soeMgr <- serialize_nComp_object(mgr, serializer = nCompiler:::get_serialize_fun(obj))
+  desoeMgr <- deserialize_nComp_object(soeMgr, nCompiler:::get_deserialize_fun(obj))
+  new.loadedObjectEnv(method(desoeMgr, "get_extptr")(serial_index))
+}
