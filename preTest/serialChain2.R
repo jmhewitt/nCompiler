@@ -5,6 +5,18 @@ library(nCompiler)
 
 set_nOption("serialize", TRUE)
 
+# Serializes and deserializes a single object.
+# Returns the deserialized LOE.
+# Makes a serialization manager from whatever DLL-charged LOE is handy.
+# Anything constructed using a generic interface should suffice.
+serdes <- function(obj) {
+  mgr <- nCompiler:::getSerializationMgr(obj)()
+  serial_index <- method(mgr, 'add_extptr')(nCompiler:::getExtptr(obj))
+  soeMgr <- serialize_nComp_object(mgr, serializer = nCompiler:::get_serialize_fun(obj))
+  desoeMgr <- deserialize_nComp_object(soeMgr, nCompiler:::get_deserialize_fun(obj))
+  new.loadedObjectEnv(method(desoeMgr, "get_extptr")(serial_index))
+}
+
 #
 # Chain test 2.
 #
@@ -82,11 +94,7 @@ mgr <- nCompiler:::getSerializationMgr(Rnc2)()
 serial_index <- method(mgr, 'add_extptr')(nCompiler:::getExtptr(Rnc2))
 serial_index
 
-soeMgr <- serialize_nComp_object(mgr, serializer = nCompiler:::get_serialize_fun(Rnc2))
-
-desoeMgr <- deserialize_nComp_object(soeMgr, nCompiler:::get_deserialize_fun(Rnc2) )
-xptr <- method(desoeMgr, "get_extptr")(serial_index)
-LOE <- new.loadedObjectEnv(xptr)
+LOE <- serdes(Rnc2)
 
 # Does the scalar initialization survive serdes?
 paste0(checkInit, " =?= ", value(LOE, 'check'))
