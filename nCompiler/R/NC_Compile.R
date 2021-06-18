@@ -89,18 +89,5 @@ nCompile_nClass <- function(NC,
   if(length(newCobjFun) != 1) 
     warning("There may be a problem with number of returned functions in nCompile_nClass.")
 
-  interface <- match.arg(interface)
-  wrappedFn <- wrapNCgenerator_for_DLLenv(newCobjFun, newDLLenv)
-  # Replace with:  return(setup_nClass_interface(interface, ?, wrappedFn, env))
-
-  if(interface == "generic")
-    return(wrappedFn)
-  ## To Do: Only "generic" works when more than one function will be returned from sourceCpp in cpp_nCompiler.  That occurs with serialization turned on.
-    fullInterface <- build_compiled_nClass(NC, wrappedFn, env = env)
-
-  if(interface == "full")
-    return(fullInterface)
-  ## interface is "both"
-  return(list(full = fullInterface, generic = wrappedfn))
+  setup_nClass_interface(match.arg(interface), NC, newCobjFun, newDLLenv, env = env, tryError = FALSE)
 }
-

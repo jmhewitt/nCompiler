@@ -20,12 +20,12 @@ nDeserialize <- function(connOrRaw) {
 
 
 serializeLOE <- function(LOE) {
-  if (class(LOE) != "loadedObjectEnv") {
-    print(paste("Advisory:  not serializing reference class ", class(LOE)))
-    newIndex <- -1
+  if (class(LOE) == "loadedObjectEnv") {
+    newIndex <- method(getSerializationMgr(LOE)(), "add_extptr")(nCompiler:::getExtptr(LOE))
   }
   else {
-    newIndex <- method(getSerializationMgr(LOE)(), "add_extptr")(nCompiler:::getExtptr(LOE))
+    print(paste("Advisory:  not serializing reference class ", class(LOE)))
+    newIndex <- -1
   }
   as.character(newIndex)
 }

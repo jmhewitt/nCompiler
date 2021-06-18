@@ -57,10 +57,10 @@ nCompile <- function(...,
                               cacheDir = cacheDir,
                               env = resultEnv,
                               returnList = returnList)
-  #'ans' consists of all compiled function names and the corresponding environments.
+  ## 'ans' consists of all compiled function names and the corresponding environments.
   newDLLenv <- make_DLLenv()
   compiledFn <- setup_DLLenv(ans, newDLLenv, returnList)
-  #'compiledFn' now a list of functions been gleaned of any DLL-specific function/environment.
+  ## 'compiledFn' is 'ans' gleaned of any DLL-specific function/environment.
   
   ## Next we re-order results using input names,
   ## in case the ordering in the C++ code or in Rcpp's handling
@@ -89,7 +89,8 @@ nCompile <- function(...,
         interfaceType <- if (is.null(interfaces[[nClass_name]])) "generic" else interfaces[[nClass_name]]
         compiledFn[[iRes]] <- setup_nClass_interface(interfaceType,
                                               units[[i]],
-                                              wrapNCgenerator_for_DLLenv(compiledFn[[iRes]], newDLLenv),
+                                              compiledFn[[iRes]],
+                                              newDLLenv,
                                               env = resultEnv)        
       }
     }
@@ -98,9 +99,10 @@ nCompile <- function(...,
     if (isNCgenerator(units[[1]])) {
       interfaceType <- if (length(interfaces) == 0 || is.null(interfaces[[1]])) "full" else interfaces[[1]]
       compiledFn <- setup_nClass_interface(interfaceType,
-                                    units[[1]],
-                                    wrapNCgenerator_for_DLLenv(compiledFn, newDLLenv),
-                                    env = resultEnv)
+                                           units[[1]],
+                                           compiledFn,
+                                           newDLLenv,
+                                           env = resultEnv)
     }
   }
   compiledFn
@@ -109,26 +111,32 @@ nCompile <- function(...,
 
 setup_nClass_interface <- function(interfaceType,
                                    NC,
-                                   wrappedFn,
-                                   env) {
-  if(interfaceType == "generic")
+                                   compiledFn,
+                                   newDLLenv,
+                                   env,
+                                   tryError = TRUE) {
+  wrappedFn <- wrapNCgenerator_for_DLLenv(compiledFn, newDLLenv)
+  if (interfaceType == "generic")
     return(wrappedFn)
-  fullInterface <- try(build_compiled_nClass(NC,
-                                             wrappedFn,
-                                             env = env))
-  if(inherits(fullInterface, "try-error")) {
-    warning("There was a problem building a full nClass interface.\n",
-            "Attempting to return a generic interface.\n")
-    return(wrappedFn)
-  }
 
-  if(interfaceType == "full")
+  ## To Do: Only "generic" works when more than one function will be returned from sourceCpp in cpp_nCompiler.  That occurs with serialization turned on.
+
+  fullInterface <- if (tryError) try(build_compiled_nClass(NC, wrappedFn, env = env))
+  else build_compiled_nClass(NC, wrappedFn, env=env)
+
+  if (inherits(fullInterface, "try-error")) {
+      warning("There was a problem building a full nClass interface.\n",
+              "Attempting to return a generic interface.\n")
+      return(wrappedFn)
+  }
+  else if(interfaceType == "full")
     return(fullInterface)
   else if(interfaceType == "both")
     return(list(full = fullInterface, generic = wrappedFn))
-
-  warning(paste0("Invalid interface type ", interfaceType, " requested.\n",
+  else {
+    warning(paste0("Invalid interface type ", interfaceType, " requested.\n",
                    "Returning a full interface.\n"))
-  fullInterface
+    return(fullInterface)
+  }
 }
   

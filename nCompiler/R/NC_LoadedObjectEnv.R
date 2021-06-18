@@ -79,7 +79,6 @@ setup_DLLenv <- function(ans, newDLLenv, returnList = FALSE) {
       newDLLenv[[DLLname]] <- ans[[i]]
     }
   }
-  #if (!all(keep)) # unneeded guard
   ans <- ans[keep]
 
   if (length(ans) != 1 || returnList)
@@ -89,16 +88,17 @@ setup_DLLenv <- function(ans, newDLLenv, returnList = FALSE) {
 }
 
 
-## returns a wrapper function causing the LOE returned by 'newObjFun' to
-## receive 'newDLLenv' as its parent environment.
+## Wraps a generator inside an invoking function which also records the DLL
+## environment.
 wrapNCgenerator_for_DLLenv <- function(newObjFun, newDLLenv) {
   force(newDLLenv)
   force(newObjFun)
   if(!is.function(newObjFun))
-    stop(paste0("newObjFun is not a function. It is a ", 
-                paste0(class(newObjFun), collapse = " ")))
+      stop(paste0("newObjFun has non-function class ",
+                  paste0(class(newObjFun), collapse = " ")))
 
-  # Wrapper function assigning the parent environment of the returned LOE to be 'newDLLenv'
+  # Return value:  wrapper function invoking the generator and assigning a
+  # parent environment to its return value.  
   wrappedNewObjFun <- function() {
     ans <- newObjFun()
     parent.env(ans) <- newDLLenv
