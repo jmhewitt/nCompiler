@@ -46,12 +46,14 @@ setExtptr <- function(env, xptr) {
 
 make_DLLenv <- function(dllFuns) {
   dllEnv <- new.env(parent = getNamespace("nCompiler"))
+  i <- 1
   for (dllFun in dllFuns) {
-    dllEnv[[name(dllFun)]] <- dllFun
+    dllEnv[[names(dllFun)[i]]] <- dllFun
+    i <- i + 1
   }
   
   class(dllEnv) <- "nC_DLL_env"
-  newDLLEnv <- dllEnv
+#  newDLLEnv <<- dllEnv
   dllEnv
 }
 
