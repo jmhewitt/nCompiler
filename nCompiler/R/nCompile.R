@@ -58,9 +58,12 @@ nCompile <- function(...,
                               env = resultEnv,
                               returnList = returnList)
   ## 'ans' consists of all compiled function names and the corresponding environments.
-  newDLLenv <- make_DLLenv()
-  compiledFn <- setup_DLLenv(ans, newDLLenv, returnList)
-  ## 'compiledFn' is 'ans' gleaned of any DLL-specific function/environment.
+  keep <- findDllIdx(ans)
+  compiledFn <- if (sum(keep) > 1 || returnList)
+                    ans[keep == 1]
+                else
+                    ans
+  newDLLenv <- make_DLLenv(if (is.list(ans)) ans[keep == 0])
   
   ## Next we re-order results using input names,
   ## in case the ordering in the C++ code or in Rcpp's handling
@@ -109,6 +112,7 @@ nCompile <- function(...,
 }
 
 
+## Returns wrapped function, R6 class or both.
 setup_nClass_interface <- function(interfaceType,
                                    NC,
                                    compiledFn,

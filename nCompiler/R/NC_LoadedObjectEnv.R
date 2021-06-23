@@ -44,10 +44,15 @@ setExtptr <- function(env, xptr) {
   env
 }
 
-make_DLLenv <- function() {
-  ans <- new.env(parent = getNamespace("nCompiler"))
-  class(ans) <- "nC_DLL_env"
-  ans
+make_DLLenv <- function(dllFuns) {
+  dllEnv <- new.env(parent = getNamespace("nCompiler"))
+  for (dllFun in dllFuns) {
+    dllEnv[[name(dllFun)]] <- dllFun
+  }
+  
+  class(dllEnv) <- "nC_DLL_env"
+  newDLLEnv <- dllEnv
+  dllEnv
 }
 
 get_DLLenv <- function(obj) {
@@ -61,30 +66,20 @@ getAuxFunNames <- function() {
 }
 
 
-# Filters compiled function list for specified names of helper functions pertaining to DLL.
-# Filtered-out functions moved to new DLL environment.
-# Returns filtered list or singleton.
-setup_DLLenv <- function(ans, newDLLenv, returnList = FALSE) {
-  if (!is.list(ans))
-    return(ans) # Why return on singleton?
-
-  keep <- rep(TRUE, length(ans))
+## Identifies indices of DLL helper functions.
+## Returns vector with slot i ==  1/0 if ans[i] is/isn't a helper function.
+findDllIdx <- function(ans) {
+  keep <- rep(1, if (is.list(ans)) length(ans) else 1)
   for(DLLname in getAuxFunNames()) {
     found <- grepl(DLLname, names(ans))
     if(any(found)) {
       i <- which(found)
       if(length(i) != 1)
-        stop(paste("Compilation produces multiple instances of ", DLLname));
-      keep[i] <- FALSE
-      newDLLenv[[DLLname]] <- ans[[i]]
+        stop(paste("Duplicates of function name ", DLLname, " found"));
+      keep[i] <- 0
     }
   }
-  ans <- ans[keep]
-
-  if (length(ans) != 1 || returnList)
-    ans
-  else
-    ans[[1]]
+  keep
 }
 
 
@@ -97,8 +92,8 @@ wrapNCgenerator_for_DLLenv <- function(newObjFun, newDLLenv) {
       stop(paste0("newObjFun has non-function class ",
                   paste0(class(newObjFun), collapse = " ")))
 
-  # Return value:  wrapper function invoking the generator and assigning a
-  # parent environment to its return value.  
+  # Return value is a wrapper that invokes the generator and assigns a
+  # parent environment to the generated value.  
   wrappedNewObjFun <- function() {
     ans <- newObjFun()
     parent.env(ans) <- newDLLenv
