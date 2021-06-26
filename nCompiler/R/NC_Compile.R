@@ -84,7 +84,7 @@ nCompile_nClass <- function(NC,
     return(newCobjFun)
   }
 
-  newDLLenv <- make_DLLenv()
+  newDLLenv <- setDLLEnv() #make_DLLenv()
   newCobjFun <- setup_DLLenv(newCobjFun, newDLLenv)
   if(length(newCobjFun) != 1) 
     warning("There may be a problem with number of returned functions in nCompile_nClass.")

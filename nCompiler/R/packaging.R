@@ -844,7 +844,6 @@ nDocumentNFunction <- function(obj = NULL, name, title, description = NULL,
   
   header <- paste0(c(nameProc, titleProc, descProc, paramsProc, otherRoxygen), 
                    collapse = "\n")
-
   
   return(list(header = header))
 }

@@ -48,17 +48,27 @@ make_DLLenv <- function(dllFuns) {
   dllEnv <- new.env(parent = getNamespace("nCompiler"))
   i <- 1
   for (dllFun in dllFuns) {
-    dllEnv[[names(dllFun)[i]]] <- dllFun
+    dllEnv[[names(dllFuns)[i]]] <- dllFun
     i <- i + 1
   }
   
   class(dllEnv) <- "nC_DLL_env"
-#  newDLLEnv <<- dllEnv
   dllEnv
 }
 
+
 get_DLLenv <- function(obj) {
   parent.env(obj)
+}
+
+
+## Stateful version of above returning a getter.
+setDLLEnv <- function(dllFuns) {
+  newDLLEnv <- make_DLLenv(dllFuns)
+
+  getDLLEnv <- function() {
+    newDLLEnv
+  }
 }
 
 
@@ -85,10 +95,10 @@ findDllIdx <- function(ans) {
 }
 
 
-## Wraps a generator inside an invoking function which also records the DLL
+## Wraps a generator inside an invoking function which also gets the DLL
 ## environment.
-wrapNCgenerator_for_DLLenv <- function(newObjFun, newDLLenv) {
-  force(newDLLenv)
+wrapNCgenerator_for_DLLenv <- function(newObjFun, getDLLenv) {
+  force(getDLLenv)
   force(newObjFun)
   if(!is.function(newObjFun))
       stop(paste0("newObjFun has non-function class ",
@@ -98,10 +108,9 @@ wrapNCgenerator_for_DLLenv <- function(newObjFun, newDLLenv) {
   # parent environment to the generated value.  
   wrappedNewObjFun <- function() {
     ans <- newObjFun()
-    parent.env(ans) <- newDLLenv
+    parent.env(ans) <- getDLLenv()
     ans
   }
-  wrappedNewObjFun
 }
 
 

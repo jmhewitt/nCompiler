@@ -59,24 +59,26 @@ nCompile <- function(...,
                               returnList = returnList)
   ## 'ans' consists of all compiled function names and the corresponding environments.
   keep <- findDllIdx(ans)
-  compiledFn <- if (sum(keep) > 1 || returnList)
-                    ans[keep == 1]
-                else
-                    ans
-  newDLLenv <- make_DLLenv(if (is.list(ans)) ans[keep == 0])
+  getDLLEnv <- setDLLEnv(if (is.list(ans)) ans[keep == 0] else NULL)
   
-  ## Next we re-order results using input names,
-  ## in case the ordering in the C++ code or in Rcpp's handling
-  ## does not match order of units.
-  ## cpp_names should be 1-to-1 with names(ans)
-  ## We want to return with names(ans) changed to
-  ## names(units) corresponding to cpp_names.
-  cpp_names <- sapply(units, function(unit) {
-    if (isNF(unit)) NFinternals(unit)$cpp_code_name
-    else unit$classname
-  })
-
+  compiledFn <- if (sum(keep) > 1 || returnList)
+                  ans[keep == 1]
+  else if (is.list(ans))
+    ans[[1]]
+  else
+    ans
   if(is.list(compiledFn)) {
+    ## Next we re-order results using input names,
+    ## in case the ordering in the C++ code or in Rcpp's handling
+    ## does not match order of units.
+    ## cpp_names should be 1-to-1 with names(ans)
+    ## We want to return with names(ans) changed to
+    ## names(units) corresponding to cpp_names.
+    cpp_names <- sapply(units, function(unit) {
+      if (isNF(unit)) NFinternals(unit)$cpp_code_name
+      else unit$classname
+    })
+
     newNames <- names(compiledFn)
     SEXPgen_names <- paste0("new_", cpp_names)
     for(i in seq_along(units)) {
@@ -93,7 +95,7 @@ nCompile <- function(...,
         compiledFn[[iRes]] <- setup_nClass_interface(interfaceType,
                                               units[[i]],
                                               compiledFn[[iRes]],
-                                              newDLLenv,
+                                              getDLLEnv,
                                               env = resultEnv)        
       }
     }
@@ -104,7 +106,7 @@ nCompile <- function(...,
       compiledFn <- setup_nClass_interface(interfaceType,
                                            units[[1]],
                                            compiledFn,
-                                           newDLLenv,
+                                           getDLLEnv,
                                            env = resultEnv)
     }
   }
@@ -116,10 +118,10 @@ nCompile <- function(...,
 setup_nClass_interface <- function(interfaceType,
                                    NC,
                                    compiledFn,
-                                   newDLLenv,
+                                   getDLLEnv,
                                    env,
                                    tryError = TRUE) {
-  wrappedFn <- wrapNCgenerator_for_DLLenv(compiledFn, newDLLenv)
+  wrappedFn <- wrapNCgenerator_for_DLLenv(compiledFn, getDLLEnv)
   if (interfaceType == "generic")
     return(wrappedFn)
 

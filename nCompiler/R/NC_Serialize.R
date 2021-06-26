@@ -1,22 +1,5 @@
 # Code for serializing and de-serializing loaded nComp objects
 
-# Internal function used by save_nClass() which calls the provided serialization
-# function, then instantiates and returns a new loadedObjectEnv with the
-# contents
-
-loadDLLenv <- function(newLOE, loadands) {
-  for (DLLname in getSerialFunNames()) {
-    found <- grepl(DLLname, names(loadands))
-    if (any(found)) {
-      i <- which(found)
-      if (length(i) != 1)
-        stop(paste("Loading multiple instances of ", DLLname));
-      parent.env(newLOE)[[DLLname]] <- loadands[[i]]
-    }
-  }
-}
-
-
 #' @name save_nClass
 #' @title Save an instance of an nClass object across sessions
 #' @description Saves an nClass, including its compiled components, across
