@@ -84,10 +84,10 @@ nCompile_nClass <- function(NC,
     return(newCobjFun)
   }
 
-  newDLLenv <- setDLLEnv() #make_DLLenv()
-  newCobjFun <- setup_DLLenv(newCobjFun, newDLLenv)
-  if(length(newCobjFun) != 1) 
-    warning("There may be a problem with number of returned functions in nCompile_nClass.")
+  keep <- findDLLIdx(newCobFun)
+  if (sum(keep) > 1)
+    warning("nCompile_nClass returns more than one function.")
 
-  setup_nClass_interface(match.arg(interface), NC, newCobjFun, newDLLenv, env = env, tryError = FALSE)
+  getDLLenv <- setDLLenv(if (is.list(newCobjFun)) newCobjFun[keep == 0] else NULL)
+  setup_nClass_interface(match.arg(interface), NC, newCobjFun, getDLLenv, env = env, tryError = FALSE)
 }
