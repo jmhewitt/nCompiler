@@ -64,10 +64,16 @@ get_DLLenv <- function(obj) {
 
 ## Stateful version of above returning a getter.
 setDLLEnv <- function(dllFuns) {
-  newDLLEnv <- make_DLLenv(dllFuns)
+  dllEnv <- make_DLLenv(dllFuns)
 
+  ## Gets the current DLL environment.
   getDLLEnv <- function() {
-    newDLLEnv
+    dllEnv
+  }
+
+  ## Generates a new DLL environment.
+  resetDLLEnv <- function(dllFuns) {
+    dllEnv <<- make_DLLenv(dllFuns)
   }
 }
 
