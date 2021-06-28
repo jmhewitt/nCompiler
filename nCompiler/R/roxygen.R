@@ -20,7 +20,7 @@ getRoxygenFlag <- function(objs, roxygen) {
 }
 
 
-roxify <- function(objname, RcppPacket, roxygenFlag, roxygen) {
+roxify <- function(objName, RcppPacket, roxygenFlag, roxygen) {
   thisRox <- switch(roxygenFlag,
                     none = NULL,
                     indices = if(length(roxygen) < i) roxygen[[i]] else NULL,

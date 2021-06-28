@@ -59,7 +59,7 @@ nCompile <- function(...,
                               returnList = returnList)
   ## 'ans' consists of all compiled function names and the corresponding environments.
   keep <- findDllIdx(ans)
-  getDLLEnv <- setDLLEnv(if (is.list(ans)) ans[keep == 0] else NULL)
+  mgr <- dllEnvMgr(if (is.list(ans)) ans[keep == 0] else NULL)
   
   compiledFn <- if (sum(keep) > 1 || returnList)
                   ans[keep == 1]
@@ -95,7 +95,7 @@ nCompile <- function(...,
         compiledFn[[iRes]] <- setup_nClass_interface(interfaceType,
                                               units[[i]],
                                               compiledFn[[iRes]],
-                                              getDLLEnv,
+                                              mgr,
                                               env = resultEnv)        
       }
     }
@@ -106,7 +106,7 @@ nCompile <- function(...,
       compiledFn <- setup_nClass_interface(interfaceType,
                                            units[[1]],
                                            compiledFn,
-                                           getDLLEnv,
+                                           mgr,
                                            env = resultEnv)
     }
   }
@@ -118,10 +118,10 @@ nCompile <- function(...,
 setup_nClass_interface <- function(interfaceType,
                                    NC,
                                    compiledFn,
-                                   getDLLEnv,
+                                   mgr,
                                    env,
                                    tryError = TRUE) {
-  wrappedFn <- wrapNCgenerator_for_DLLenv(compiledFn, getDLLEnv)
+  wrappedFn <- wrapNCgenerator_for_DLLenv(compiledFn, mgr)
   if (interfaceType == "generic")
     return(wrappedFn)
 
