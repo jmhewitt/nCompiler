@@ -58,7 +58,7 @@ nCompile <- function(...,
                               env = resultEnv,
                               returnList = returnList)
   ## 'ans' consists of all compiled function names and the corresponding environments.
-  keep <- findDllIdx(ans)
+  keep <- findDllNames(names(ans))
   mgr <- dllEnvMgr(if (is.list(ans)) ans[keep == 0] else NULL)
   
   compiledFn <- if (sum(keep) > 1 || returnList)

@@ -78,29 +78,6 @@ dllEnvMgr <- function(dllFuns) {
 }
 
 
-# Returns a list of reserved auxiliary function names. For now limited to serialization utilities.
-getAuxFunNames <- function() {
-    getSerialFunNames()
-}
-
-
-## Identifies indices of DLL helper functions.
-## Returns vector with slot i ==  1/0 if ans[i] is/isn't a helper function.
-findDllIdx <- function(ans) {
-  keep <- rep(1, if (is.list(ans)) length(ans) else 1)
-  for(DLLname in getAuxFunNames()) {
-    found <- grepl(DLLname, names(ans))
-    if(any(found)) {
-      i <- which(found)
-      if(length(i) != 1)
-        stop(paste("Duplicates of function name ", DLLname, " found"));
-      keep[i] <- 0
-    }
-  }
-  keep
-}
-
-
 ## Wraps a generator inside an invoking function which also gets the DLL
 ## environment.
 wrapNCgenerator_for_DLLenv <- function(newObjFun, mgr) {

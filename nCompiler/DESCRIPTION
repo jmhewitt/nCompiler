@@ -41,6 +41,7 @@ Collate:
     cppDefs_utils.R
     cppDefs_variables.R
     developerTools.R
+    dual_DLL.R
     local_DLL.R
     NC.R
     NC_Compile.R
