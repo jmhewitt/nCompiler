@@ -41,7 +41,10 @@ updateDefaults <- function(defaults, controls) {
     error_recover = FALSE, # if TRUE, attempt to recover into a browser() after errors caught by nComp's error trapping, similarly to options(error = recover)
     pause_after_writing_files = FALSE, #if TRUE, enter browser() after generated code files have been written but before the C++ compiler has been called. 
     verbose = FALSE,
-    sourceCpp_verbose = FALSE
+    sourceCpp_verbose = FALSE,
+    deserializerFunName = "nComp_deserialize_",
+    serializerFunName = "nComp_serialize_",
+    serializationManagerName = "new_serialization_mgr"
   )
 )
 

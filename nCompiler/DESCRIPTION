@@ -41,11 +41,11 @@ Collate:
     cppDefs_utils.R
     cppDefs_variables.R
     developerTools.R
-    dual_DLL.R
     local_DLL.R
     NC.R
     NC_Compile.R
     NC_CompilerClass.R
+    NC_DLL.R
     NC_FullCompiledInterface.R
     NC_InternalsClass.R
     NC_LoadedObjectEnv.R

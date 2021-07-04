@@ -235,18 +235,8 @@ get_deserialize_fun <- function(loe) {
 }
 
 
-getDeserializerFunName <- function() {
-  "nComp_deserialize_"
-}
-
-
-getSerializerFunName <- function() {
-  "nComp_serialize_"
-}
-
-
-getSerializationManagerName <- function() {
-  "new_serialization_mgr"
+getSerialFunNames <- function() {
+  c(get_nOption("serializerFunName"), get_nOption("deserializerFunName"), get_nOption("serializationManagerName"))
 }
 
 
@@ -261,11 +251,6 @@ getSerializationMgr <- function(LOE) {
   mgr
 }
 
-
-# Returns the names of the internally-generated serialization helper functions.
-getSerialFunNames <- function() {
-  c(getSerializerFunName(), getDeserializerFunName(), getSerializationManagerName())
-}
 
 #' Constructs the name of the deserializer from the package and class name.
 getDeserializerName <- function(loadedObj) {

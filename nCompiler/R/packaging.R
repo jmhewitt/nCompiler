@@ -257,6 +257,7 @@ nWritePackage <- function(...,
   Rdir <- file.path(pkgDir, "R")
   srcDir <- file.path(pkgDir, "src")
 
+  writeDualFiles(Rdir)
   writeRHooks(package.name, Rdir, getAuxFunNames())
   
   # Loop over each object again
@@ -373,7 +374,7 @@ nWritePackage <- function(...,
 }
 
 
-#' @name buildPackage
+#' @name nBuildPackage
 #' @title Build and install packages written by nWritePackage
 #' @export
 #' @param package.name Character string. The name of the package to be built,
@@ -855,6 +856,14 @@ headerString <- function(pkgName) {
 }
 
 
+##
+writeDualFiles <- function(Rdir) {
+  dualFiles <- c('NC_DLL.R', 'dual_Serialize.R')
+  for (dualFile in dualFiles) {
+    file.copy(file.path(thisDir, dualFile), file.path(Rdir, dualFile))
+  }
+}
+
 
 ## Outputs 'Rhooks.R' for .onLoad() call on package reload.
 ## The only client is currently the DLL manager, which ensures
@@ -884,7 +893,8 @@ writeDLLMgr <- function(pkgName, Rdir) {
     headerString(pkgName),
     paste0('dllEnvMgr <- function() {'),
     paste0('fnames <- getDLLRegisteredRoutines(\'', pkgName, '\')'),
-    'print(fnames)',
+    paste0('keep <- findDllNames(fNames)'),
+    'print(keep)',
     '}'
   )
   mgrFile <- 'dllEnvMgr.R'
