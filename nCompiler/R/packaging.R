@@ -855,25 +855,12 @@ autoRHeader <- function(pkgName) {
 }
 
 
-#' Duplicates 'nCompiler' files also needed by generated package.
+#' Duplicates 'nCompiler' functions also needed by generated package.
 writeDualFiles <- function(Rdir) {
-  outstr <- "findKeptNames <- function(funNames, auxNames) {
-  keep <- rep(TRUE, if (is.list(funNames)) length(funNames) else 1)
-  for(DLLname in auxNames) {
-    found <- grepl(DLLname, funNames)
-    if(any(found)) {
-      i <- which(found)
-      if(length(i) != 1)
-        stop(paste(\"Auxilliary function \", DLLname, \" is duplicated\"));
-      keep[i] <- FALSE
-    }
-  }
-  keep
-}"
   pkgFile <- 'NC_DLL.R'
   pkgFilePath <- file.path(Rdir, pkgFile)
   con <- file(pkgFilePath, open = 'w')
-  writeLines(outstr, con)
+  writeLines(c('findKeptNames <- ', deparse(findKeptNames)), con)
   close(con)
 }
 
@@ -911,12 +898,11 @@ writeDLLMgr <- function(pkgName, Rdir) {
   deparsed_mgr = c(
     autoRHeader(pkgName),
     paste0('dllEnvMgr <- function() {'),
-    paste0('fNames <- getDLLRegisteredRoutines(\'', pkgName, '\')'),
-    paste0('findKeptNames(fNames, c(', auxNames, '))'),
+    paste0('\tfNames <- getDLLRegisteredRoutines(\'', pkgName, '\')'),
+    paste0('\tfindKeptNames(fNames, c(', auxNames, '))'),
     '}'
   )
-  mgrFile <- 'dllEnvMgr.R'
-  mgrFilePath <- file.path(Rdir, mgrFile)
+  mgrFilePath <- file.path(Rdir, 'dllEnvMgr.R')
   con <- file(mgrFilePath, open = 'w')
   writeLines(deparsed_mgr, con)
   close(con)
