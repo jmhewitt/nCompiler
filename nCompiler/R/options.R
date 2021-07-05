@@ -115,22 +115,32 @@ nOptions <- function(...) {
 }
 
 
-## Returns a list of reserved auxiliary function names.
-## For now limited to serialization utilities.
+#' @return true iff the serialization option is set.
+doSerialize <- function() {
+  isTRUE(get_nOption('serialize'))
+}
+
+
+#' @return list of reserved auxiliary function names.
 getAuxFunNames <- function() {
+  ## For now only the serialization utilities are such utilities.
   c(get_nOption('serializerFunName'), get_nOption('deserializerFunName'), get_nOption('serializationManagerName'))
 }
 
+
+#' @return serialization manager name specified by option environment.
 getSerializationManagerName <- function() {
   get_nOption('serializationManagerName')
 }
 
 
+#' @return serializer name specified by option environment.
 getSerializerFunName <- function() {
   get_nOption('serializerFunName')
 }
 
 
+#' @return deserializer name specified by option environment.
 getDeserializerFunName <- function() {
   get_nOption('deserializerFunName')
 }

@@ -5,11 +5,11 @@
 ## irrelevant.
 
 
-## Identifies indices of DLL helper functions.
-## Returns boolean with slot values T/F if funNames[i] is/isn't a helper.
-findDllNames <- function(funNames, auxNames) {
+#' Identifies indices of kept (non-DLL helper) function names.
+#' @return boolean with values T/F as to whether name at index is/isn't kept.
+findKeptNames <- function(funNames, auxNames) {
   keep <- rep(TRUE, if (is.list(funNames)) length(funNames) else 1)
-  for(DLLname in getAuxFunNames()) {
+  for(DLLname in auxNames) {
     found <- grepl(DLLname, funNames)
     if(any(found)) {
       i <- which(found)
