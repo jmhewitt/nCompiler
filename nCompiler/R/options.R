@@ -115,3 +115,8 @@ nOptions <- function(...) {
 }
 
 
+## Returns a list of reserved auxiliary function names.
+## For now limited to serialization utilities.
+getAuxFunNames <- function() {
+  c(get_nOption('serializerFunName'), get_nOption('deserializerFunName'), get_nOption('serializationManagerName'))
+}

@@ -235,18 +235,13 @@ get_deserialize_fun <- function(loe) {
 }
 
 
-getSerialFunNames <- function() {
-  c(get_nOption("serializerFunName"), get_nOption("deserializerFunName"), get_nOption("serializationManagerName"))
-}
-
-
 getSerializationMgr <- function(LOE) {
   if (class(LOE) != "loadedObjectEnv") {
     stop(paste("Serialization manager not present in class ", class(LOE)))
   }
   mgr <- getElement(parent.env(LOE), getSerializationManagerName())
   if (is.null(mgr)) {
-    stop(paste0("Manager ", getSerializationManagerName(), " not found in parent environment."))
+    stop(paste0("Serialization manager ", getSerializationManagerName(), " not found in parent environment."))
   }
   mgr
 }
@@ -254,7 +249,8 @@ getSerializationMgr <- function(LOE) {
 
 #' Constructs the name of the deserializer from the package and class name.
 getDeserializerName <- function(loadedObj) {
-  utils::getFromNamespace(paste0(getDeserializerFunName(), Rname2CppName(loadedObj$classname)),
+  utils::getFromNamespace(paste0(getDeserializerFunName(),
+                                 Rname2CppName(loadedObj$classname)),
                           loadedObj$package.name)
 }
 

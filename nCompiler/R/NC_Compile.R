@@ -84,7 +84,7 @@ nCompile_nClass <- function(NC,
     return(newCobjFun)
   }
 
-  keep <- findDLLIdx(newCobFun)
+  keep <- findDLLNames(newCobFun, getAuxFunNames())
   if (sum(keep) > 1)
     warning("nCompile_nClass returns more than one function.")
 

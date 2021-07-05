@@ -858,10 +858,25 @@ headerString <- function(pkgName) {
 
 ##
 writeDualFiles <- function(Rdir) {
-  dualFiles <- c('NC_DLL.R', 'dual_Serialize.R')
-  for (dualFile in dualFiles) {
-    file.copy(file.path(thisDir, dualFile), file.path(Rdir, dualFile))
+
+  outstr <- " findDllNames <- function(funNames, auxNames) {
+  keep <- rep(TRUE, if (is.list(funNames)) length(funNames) else 1)
+  for(DLLname in auxNames) {
+    found <- grepl(DLLname, funNames)
+    if(any(found)) {
+      i <- which(found)
+      if(length(i) != 1)
+        stop(paste(\"Auxilliary function \", DLLname, \" is duplicated\"));
+      keep[i] <- FALSE
+    }
   }
+  keep
+}"
+  pkgFile <- 'NC_DLL.R'
+  pkgFilePath <- file.path(Rdir, pkgFile)
+  con <- file(pkgFilePath, open = 'w')
+  writeLines(outstr, con)
+  close(con)
 }
 
 
@@ -889,11 +904,12 @@ writeRHooks <- function(pkgName, Rdir, dllFunNames) {
 ## Outputs functions constructing a DLL environment manager for the
 ## package reloader.
 writeDLLMgr <- function(pkgName, Rdir) {
+  auxNames <- get_nOption('serializerFunName')
   deparsed_mgr = c(
     headerString(pkgName),
     paste0('dllEnvMgr <- function() {'),
-    paste0('fnames <- getDLLRegisteredRoutines(\'', pkgName, '\')'),
-    paste0('keep <- findDllNames(fNames)'),
+    paste0('fNames <- getDLLRegisteredRoutines(\'', pkgName, '\')'),
+    paste0('keep <- findDllNames(fNames, \'', auxNames, '\' )'),
     'print(keep)',
     '}'
   )

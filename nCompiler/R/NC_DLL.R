@@ -5,23 +5,16 @@
 ## irrelevant.
 
 
-## Returns a list of reserved auxiliary function names.
-## For now limited to serialization utilities.
-getAuxFunNames <- function() {
-  getSerialFunNames()
-}
-
-
 ## Identifies indices of DLL helper functions.
-## Returns vector with slot i ==  1/0 if funNames[i] is/isn't a helper function.
-findDllNames <- function(funNames) {
+## Returns boolean with slot values T/F if funNames[i] is/isn't a helper.
+findDllNames <- function(funNames, auxNames) {
   keep <- rep(TRUE, if (is.list(funNames)) length(funNames) else 1)
-  for(DLLname in getAuxFunNames()) {
+  for(DLLname in auxNames()) {
     found <- grepl(DLLname, funNames)
     if(any(found)) {
       i <- which(found)
       if(length(i) != 1)
-        stop(paste("Duplicates of function name ", DLLname, " found"));
+        stop(paste("Auxilliary function ", DLLname, " is duplicated"));
       keep[i] <- FALSE
     }
   }
