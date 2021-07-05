@@ -9,7 +9,7 @@
 ## Returns boolean with slot values T/F if funNames[i] is/isn't a helper.
 findDllNames <- function(funNames, auxNames) {
   keep <- rep(TRUE, if (is.list(funNames)) length(funNames) else 1)
-  for(DLLname in auxNames()) {
+  for(DLLname in getAuxFunNames()) {
     found <- grepl(DLLname, funNames)
     if(any(found)) {
       i <- which(found)

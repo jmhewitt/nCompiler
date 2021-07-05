@@ -120,3 +120,18 @@ nOptions <- function(...) {
 getAuxFunNames <- function() {
   c(get_nOption('serializerFunName'), get_nOption('deserializerFunName'), get_nOption('serializationManagerName'))
 }
+
+getSerializationManagerName <- function() {
+  get_nOption('serializationManagerName')
+}
+
+
+getSerializerFunName <- function() {
+  get_nOption('serializerFunName')
+}
+
+
+getDeserializerFunName <- function() {
+  get_nOption('deserializerFunName')
+}
+

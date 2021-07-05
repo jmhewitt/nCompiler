@@ -258,7 +258,7 @@ nWritePackage <- function(...,
   srcDir <- file.path(pkgDir, "src")
 
   writeDualFiles(Rdir)
-  writeRHooks(package.name, Rdir, getAuxFunNames())
+  writeRHooks(package.name, Rdir)
   
   # Loop over each object again
   for (i in 1:length(objs)) {
@@ -883,7 +883,7 @@ writeDualFiles <- function(Rdir) {
 ## Outputs 'Rhooks.R' for .onLoad() call on package reload.
 ## The only client is currently the DLL manager, which ensures
 ## a clean DLL environment is built for the class generators.
-writeRHooks <- function(pkgName, Rdir, dllFunNames) {
+writeRHooks <- function(pkgName, Rdir) {
   writeDLLMgr(pkgName, Rdir)
     
   deparsed_hooks = c(
@@ -904,7 +904,7 @@ writeRHooks <- function(pkgName, Rdir, dllFunNames) {
 ## Outputs functions constructing a DLL environment manager for the
 ## package reloader.
 writeDLLMgr <- function(pkgName, Rdir) {
-  auxNames <- get_nOption('serializerFunName')
+  auxNames <- getAuxFunNames()
   deparsed_mgr = c(
     headerString(pkgName),
     paste0('dllEnvMgr <- function() {'),
