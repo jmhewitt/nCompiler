@@ -5,6 +5,39 @@
 ## irrelevant.
 
 
+#' @return new environment referencing DLL-scope auxiliary functions.
+make_DLLenv <- function(dllFuns, pkgName) {
+  dllEnv <- new.env(parent = getNamespace(pkgName))
+
+  i <- 1
+  for (dllFun in dllFuns) {
+    dllEnv[[names(dllFuns)[i]]] <- dllFun
+    i <- i + 1
+  }
+  
+  class(dllEnv) <- "nC_DLL_env"
+  dllEnv
+}
+
+
+get_DLLenv <- function(obj) {
+  parent.env(obj)
+}
+
+
+#' Stateful version of above.
+#' @return DLL environment getter.
+dllEnvMgr <- function(pkgName, dllFuns) {
+  # This should be the package namespace, not necessarily nCompiler:
+  dllEnv <- make_DLLenv(dllFuns, pkgName)
+
+  ## Gets the current DLL environment.
+  getEnv <- function() {
+    dllEnv
+  }
+}
+
+
 #' Identifies indices of kept (non-DLL helper) function names.
 #' @return boolean with values T/F as to whether name at index is/isn't kept.
 findKeptNames <- function(funNames, auxNames) {

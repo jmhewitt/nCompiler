@@ -44,42 +44,9 @@ setExtptr <- function(env, xptr) {
   env
 }
 
-make_DLLenv <- function(dllFuns) {
-  dllEnv <- new.env(parent = getNamespace("nCompiler"))
-  i <- 1
-  for (dllFun in dllFuns) {
-    dllEnv[[names(dllFuns)[i]]] <- dllFun
-    i <- i + 1
-  }
-  
-  class(dllEnv) <- "nC_DLL_env"
-  dllEnv
-}
 
-
-get_DLLenv <- function(obj) {
-  parent.env(obj)
-}
-
-
-## Stateful version of above returning a getter.
-dllEnvMgr <- function(dllFuns) {
-  dllEnv <- make_DLLenv(dllFuns)
-
-  ## Generates a new DLL environment.
-  resetEnv <- function(dllFuns) {
-    dllEnv <<- make_DLLenv(dllFuns)
-  }
-
-  ## Gets the current DLL environment.
-  getEnv <- function() {
-    dllEnv
-  }
-}
-
-
-## Wraps a generator inside an invoking function which also gets the DLL
-## environment.
+#' Wraps a generator inside an invoking function which also gets the DLL
+#' environment.
 wrapNCgenerator_for_DLLenv <- function(newObjFun, mgr) {
   force(mgr)
   force(newObjFun)
@@ -98,7 +65,6 @@ wrapNCgenerator_for_DLLenv <- function(newObjFun, mgr) {
 
 
 ## Next two will be deprecated
-
 loadedObjectEnv_serialized <- function(env) {
   if(!is.loadedObjectEnv(env))
     stop("env should be a loadedObjectEnv")

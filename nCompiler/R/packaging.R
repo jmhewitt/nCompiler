@@ -855,16 +855,6 @@ autoRHeader <- function(pkgName) {
 }
 
 
-#' Duplicates 'nCompiler' functions also needed by generated package.
-writeDualFiles <- function(Rdir) {
-  pkgFile <- 'NC_DLL.R'
-  pkgFilePath <- file.path(Rdir, pkgFile)
-  con <- file(pkgFilePath, open = 'w')
-  writeLines(c('findKeptNames <- ', deparse(findKeptNames)), con)
-  close(con)
-}
-
-
 #' Outputs 'Rhooks.R' for .onLoad() call on package reload.
 ## The only client is currently the DLL manager, which ensures
 ## a clean DLL environment is built for the class generators.
@@ -872,21 +862,29 @@ writeRHooks <- function(pkgName, Rdir) {
   if (!doSerialize())
     return
 
-  writeDualFiles(Rdir)
+  writePackageClones(Rdir)
   writeDLLMgr(pkgName, Rdir)
     
   deparsed_hooks = c(
     autoRHeader(pkgName),
     '.onLoad <- function(...) {',
-    '\tkeep <- dllEnvMgr()',
-    'print(keep)',
+    '\tsetDLLEnvMgr()',
     '}'
   )
 
-  hooksFile <- 'Rhooks.R'
-  hooksFilePath <- file.path(Rdir, hooksFile)
+  hooksFilePath <- file.path(Rdir, 'Rhooks.R')
   con <- file(hooksFilePath, open = 'w')
   writeLines(deparsed_hooks, con)
+  close(con)
+}
+
+
+#' Clones 'nCompiler' functions for inclusion by generated package.
+writePackageClones <- function(Rdir) {
+  pkgFile <- 'NC_DLL.R'
+  pkgFilePath <- file.path(Rdir, pkgFile)
+  con <- file(pkgFilePath, open = 'w')
+  writeLines(c('findKeptNames <- ', deparse(findKeptNames)), con)
   close(con)
 }
 
@@ -897,9 +895,10 @@ writeDLLMgr <- function(pkgName, Rdir) {
   auxNames <- paste0('\'', paste(getAuxFunNames(), collapse="\',\'"), '\'')
   deparsed_mgr = c(
     autoRHeader(pkgName),
-    paste0('dllEnvMgr <- function() {'),
+    paste0('setDLLEnvMgr <- function() {'),
     paste0('\tfNames <- getDLLRegisteredRoutines(\'', pkgName, '\')'),
-    paste0('\tfindKeptNames(fNames, c(', auxNames, '))'),
+    paste0('\tkept <- findKeptNames(fNames, c(', auxNames, '))'),
+    paste0('print(paste0(sum(!kept), " auxiliary functions found"))'),
     '}'
   )
   mgrFilePath <- file.path(Rdir, 'dllEnvMgr.R')
