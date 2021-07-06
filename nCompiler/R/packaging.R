@@ -862,7 +862,7 @@ writeRHooks <- function(pkgName, Rdir) {
   if (!doSerialize())
     return
 
-  writePackageClones(Rdir)
+  writePackageClones(pkgName, Rdir)
   writeDLLMgr(pkgName, Rdir)
     
   deparsed_hooks = c(
@@ -880,10 +880,13 @@ writeRHooks <- function(pkgName, Rdir) {
 
 
 #' Clones 'nCompiler' functions for inclusion by generated package.
-writePackageClones <- function(Rdir) {
-  pkgFile <- 'NC_DLL.R'
-  pkgFilePath <- file.path(Rdir, pkgFile)
+writePackageClones <- function(pkgName, Rdir) {
+  pkgFilePath <- file.path(Rdir, 'NC_DLL.R')
   con <- file(pkgFilePath, open = 'w')
+  writeLines(autoRHeader(pkgName), con)
+  writeLines(c('make_DLLenv <- ', deparse(make_DLLenv)), con)
+  writeLines(c('get_DLLenv <- ', deparse(get_DLLenv)), con)
+  writeLines(c('dllEnvMgr <- ', deparse(dllEnvMgr)), con)
   writeLines(c('findKeptNames <- ', deparse(findKeptNames)), con)
   close(con)
 }
@@ -899,6 +902,7 @@ writeDLLMgr <- function(pkgName, Rdir) {
     paste0('\tfNames <- getDLLRegisteredRoutines(\'', pkgName, '\')'),
     paste0('\tkept <- findKeptNames(fNames, c(', auxNames, '))'),
     paste0('print(paste0(sum(!kept), " auxiliary functions found"))'),
+    paset0('\tmgr <- dllEnvMgr(', pkgName, ', ', fNames[!kept], ')'),
     '}'
   )
   mgrFilePath <- file.path(Rdir, 'dllEnvMgr.R')
