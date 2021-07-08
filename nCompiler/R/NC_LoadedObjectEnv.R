@@ -48,7 +48,6 @@ setExtptr <- function(env, xptr) {
 #' Wraps a generator inside an invoking function which also gets the DLL
 #' environment.
 wrapNCgenerator_for_DLLenv <- function(newObjFun, mgr) {
-  force(mgr)
   force(newObjFun)
   if(!is.function(newObjFun))
       stop(paste0("newObjFun has non-function class ",

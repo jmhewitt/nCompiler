@@ -6,7 +6,7 @@
 class shared_ptr_holder_base {
  public:
   virtual void *get_ptr() const {
-   std::cout<<"Error: you should be in a derived shared_ptr_holder class get_ptr().  This is the base class."<<std::endl;
+    //   std::cout<<"Error: you should be in a derived shared_ptr_holder class get_ptr().  This is the base class."<<std::endl;
     return(0);
   };
   virtual ~shared_ptr_holder_base() {};

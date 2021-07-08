@@ -39,9 +39,7 @@ nCompile <- function(...,
   if(!isTRUE(get_nOption('use_nCompLocal'))) {
     RcppPacket_list[[ length(RcppPacket_list) + 1]] <- cppDefs_2_RcppPacket(make_loadedObjectEnv_cppDef(), "loadedObjectEnv_")
   }
-
   
-
   ## Write the results jointly, with one .cpp file and multiple .h files.
   ## This fits Rcpp::sourceCpp's requirements.
   cppFile = paste0(cppFileLabelFunction(),".cpp")  ## "nCompiler_multiple_units.cpp"
@@ -114,7 +112,7 @@ nCompile <- function(...,
 }
 
 
-## Returns wrapped function, R6 class or both.
+#' @return wrapped class generator, R6 class or both.
 setup_nClass_interface <- function(interfaceType,
                                    NC,
                                    compiledFn,

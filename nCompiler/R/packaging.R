@@ -901,8 +901,8 @@ writeDLLMgr <- function(pkgName, Rdir) {
     paste0('setDLLEnvMgr <- function() {'),
     paste0('\tfNames <- getDLLRegisteredRoutines(\'', pkgName, '\')'),
     paste0('\tkept <- findKeptNames(fNames, c(', auxNames, '))'),
-    paste0('print(paste0(sum(!kept), " auxiliary functions found"))'),
-    paset0('\tmgr <- dllEnvMgr(', pkgName, ', ', fNames[!kept], ')'),
+    paste0('print(paste0(sum(!kept) , " auxiliary functions found"))'),
+    paste0('\tmgr <- dllEnvMgr(\'', pkgName, '\', fNames[!kept])'),
     '}'
   )
   mgrFilePath <- file.path(Rdir, 'dllEnvMgr.R')
