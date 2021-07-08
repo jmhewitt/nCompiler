@@ -26,12 +26,11 @@ get_DLLenv <- function(obj) {
 
 
 #' Stateful version of above.
-#' @return DLL environment getter.
+#' @return DLL environment getter method.
 dllEnvMgr <- function(pkgName, dllFuns) {
-  # This should be the package namespace, not necessarily nCompiler:
   dllEnv <- make_DLLenv(dllFuns, pkgName)
 
-  ## Gets the current DLL environment.
+  ## Getter for the current DLL environment.
   getEnv <- function() {
     dllEnv
   }
