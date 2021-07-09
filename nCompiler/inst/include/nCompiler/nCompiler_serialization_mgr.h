@@ -2,6 +2,7 @@
 #define _NCOMP_SERIALIZATION_MGR
 
 #include "nCompiler_class_interface.h"
+#include "nCompiler_class_factory.h"
 
 using namespace std;
 
@@ -34,7 +35,7 @@ struct CerealWrapper {
 
 
   BaseType* getPtr() const {
-    uPtr.get();
+    return uPtr.get();
   }
 
 
@@ -155,7 +156,7 @@ void serialization_mgr::_SERIALIZE_ ( Archive & archive ) {
 	  cereal::base_class<genericInterfaceC<serialization_mgr> >(this),
 	  CEREAL_NVP(cSerialand)
 	);
-};
+}
 
 // This needs to be in code-generated C++ for the Rcpp::export annotation to be picked up by Rcpp 
 /* // [[Rcpp::export]] */
