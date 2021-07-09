@@ -280,7 +280,8 @@ nWritePackage <- function(...,
     nCompiler:::writeCpp_nCompiler(RcppPacket_list[[i]],
                                    dir = codeDir)
     if (i <= length(objs) && isNCgenerator(objs[[i]])) {
-#      objs[[i]] <- wrapNCgenerator_for_DLLenv(objs[[i]], mgr)
+      # Generator wrapper expects a compiled function, which objs[[i]] is not:
+      #      objs[[i]] <- wrapNCgenerator_for_DLLenv(objs[[i]], mgr)
       if (isTRUE(nClass_full_interface)) {
         ## Write the nClass full interface to the package's R directory
         full_interface <- build_compiled_nClass(objs[[i]], quoted = TRUE)

@@ -45,20 +45,20 @@ setExtptr <- function(env, xptr) {
 }
 
 
-#' Wraps a generator inside an invoking function which also gets the DLL
-#' environment.
-wrapNCgenerator_for_DLLenv <- function(newObjFun, mgr) {
-  force(newObjFun)
-  if(!is.function(newObjFun))
-      stop(paste0("newObjFun has non-function class ",
-                  paste0(class(newObjFun), collapse = " ")))
+#' Augments a compiled class generator with a method to obtain the DLL environment.
+#' @return augmented generator method.
+dllCompiledGenerator <- function(compiledGenerator, mgr) {
+  force(compiledGenerator)
+  if(!is.function(compiledGenerator))
+      stop(paste0("compiledGenerator has non-function class ",
+                  paste0(class(compiledGenerator), collapse = " ")))
 
-  # Return value is a wrapper that invokes the generator and assigns a
-  # parent environment to the generated value.  
+  # Return value is a method which both invokes the generator and assigns the
+  # DLL environment to the newly generated object.
   wrappedNewObjFun <- function() {
-    ans <- newObjFun()
-    parent.env(ans) <- mgr()
-    ans
+    newObj <- compiledGenerator()
+    parent.env(newObj) <- mgr()
+    newObj
   }
 }
 

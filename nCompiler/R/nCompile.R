@@ -112,14 +112,14 @@ nCompile <- function(...,
 }
 
 
-#' @return wrapped class generator, R6 class or both.
+#' @return augmented class generator, full R6 class or both.
 setup_nClass_interface <- function(interfaceType,
                                    NC,
                                    compiledFn,
                                    mgr,
                                    env,
                                    tryError = TRUE) {
-  wrappedFn <- wrapNCgenerator_for_DLLenv(compiledFn, mgr)
+  wrappedFn <- dllCompiledGenerator(compiledFn, mgr)
   if (interfaceType == "generic")
     return(wrappedFn)
 
