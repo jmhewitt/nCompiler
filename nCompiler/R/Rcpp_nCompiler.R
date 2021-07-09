@@ -294,8 +294,7 @@ writeCpp_nCompiler <- function(Rcpp_packet,
 }
 
 #' @export
-#' Returns a pair of vectors, one containing the compiled function names and the other containing
-#' the corresponding environments.
+#' @return pair of vectors: compiled function names and corresponding environments.
 compileCpp_nCompiler <- function(Rcpp_packet,
                                  dir = file.path(tempdir(), 'nCompiler_generatedCode'),
                                  cacheDir = file.path(tempdir(), 'nCompiler_RcppCache'),
