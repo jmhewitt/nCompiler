@@ -263,6 +263,10 @@ nWritePackage <- function(...,
   # if (doSerialize()) # Gate by nCompiler option?
   #  RcppPacket_list[[ length(RcppPacket_list) + 1]] <- cppDefs_2_RcppPacket(make_serialization_cppDef(), "serialization_")
 
+  # DLL environment names are the additional auxiliaries to be compiled.
+  dllEnvNames <- if (doSerialize()) getAuxFunNames() else NULL
+  mgr <- dllEnvMgr(package.name, dllEnvNames)
+
   # Loops over each object again, plus any new ones.
   for (i in 1:length(RcppPacket_list)) {
     ## We write the code once for the package's DLL...
@@ -275,58 +279,59 @@ nWritePackage <- function(...,
     ## heavy use of C++ templates.
     nCompiler:::writeCpp_nCompiler(RcppPacket_list[[i]],
                                    dir = codeDir)
-    if (i <= length(objs) && isNCgenerator(objs[[i]]) && isTRUE(nClass_full_interface)) {
-      ## Write the nClass full interface to the package's R directory
-      full_interface <- build_compiled_nClass(objs[[i]], quoted = TRUE)
-      deparsed_full_interface <- deparse(full_interface)
-      generator_name <- objs[[i]]$classname
-      deparsed_full_interface[1] <- paste0(
-        generator_name, ' <- ', deparsed_full_interface[1]
-      )
-      # Retrieve roxygen entry
-      thisRox <- switch(roxygenFlag,
-                        none = NULL,
-                        indices = if(length(roxygen) < i) roxygen[[i]] else NULL,
-                        names = if (objNames[[i]] %in% names(roxygen)) 
-                                  roxygen[[ objNames[i] ]] 
-                                else NULL
-                        )
-      
-      if (!is.null(thisRox)) {
-        # Find the spot where each documented method is defined
-        for (m in 1:length(thisRox$methods)) {
-          thisDefn <- grep(paste0(names(thisRox$methods)[m], " = function("),
-                           deparsed_full_interface, fixed = TRUE)
-          deparsed_full_interface[thisDefn] <- 
-            gsub(pattern = names(thisRox$methods)[m],
-                 replacement = paste0(
-                   "\n", thisRox$methods[m], "\n", names(thisRox$methods)[m]
-                 ),
-                 x = deparsed_full_interface[thisDefn], 
-                 fixed = TRUE)
-        }
-      }
-      
-      deparsed_full_interface <- c(
-        autoRHeader(package.name),
-        if (is.list(thisRox)) thisRox[["header"]] else thisRox,
-        if (totalControl[[i]]$export) "#' @export\n" else NULL,
-        deparsed_full_interface,
-        paste0(generator_name, '$parent_env <- new.env()'),
-        paste0(generator_name, '$.newCobjFun <- NULL')
-      )
+    if (i <= length(objs) && isNCgenerator(objs[[i]])) {
+#      objs[[i]] <- wrapNCgenerator_for_DLLenv(objs[[i]], mgr)
+      if (isTRUE(nClass_full_interface)) {
+        ## Write the nClass full interface to the package's R directory
+        full_interface <- build_compiled_nClass(objs[[i]], quoted = TRUE)
+        deparsed_full_interface <- deparse(full_interface)
+        generator_name <- objs[[i]]$classname
+        deparsed_full_interface[1] <- paste0(
+          generator_name, ' <- ', deparsed_full_interface[1]
+        )
 
-      Rfile <- paste0(generator_name, '.R')
-      Rfilepath <- file.path(Rdir, Rfile)
-      con <- file(Rfilepath, open = 'w')
-      writeLines(deparsed_full_interface, con)
-      close(con)
+        # Retrieve roxygen entry
+        thisRox <- switch(roxygenFlag,
+                          none = NULL,
+                          indices = if(length(roxygen) < i) roxygen[[i]] else NULL,
+                          names = if (objNames[[i]] %in% names(roxygen)) 
+                            roxygen[[ objNames[i] ]] 
+                          else NULL
+                          )
+      
+        if (!is.null(thisRox)) {
+        # Find the spot where each documented method is defined
+          for (m in 1:length(thisRox$methods)) {
+            thisDefn <- grep(paste0(names(thisRox$methods)[m], " = function("),
+                             deparsed_full_interface, fixed = TRUE)
+            deparsed_full_interface[thisDefn] <- 
+  gsub(pattern = names(thisRox$methods)[m],
+       replacement = paste0(
+         "\n", thisRox$methods[m], "\n", names(thisRox$methods)[m]
+       ),
+       x = deparsed_full_interface[thisDefn], 
+       fixed = TRUE)
+          }
+        }
+      
+        deparsed_full_interface <- c(
+          autoRHeader(package.name),
+          if (is.list(thisRox)) thisRox[["header"]] else thisRox,
+          if (totalControl[[i]]$export) "#' @export\n" else NULL,
+          deparsed_full_interface,
+          paste0(generator_name, '$parent_env <- new.env()'),
+          paste0(generator_name, '$.newCobjFun <- NULL')
+        )
+        Rfile <- paste0(generator_name, '.R')
+        Rfilepath <- file.path(Rdir, Rfile)
+        con <- file(Rfilepath, open = 'w')
+        writeLines(deparsed_full_interface, con)
+        close(con)
+      }
     }
   }
+  
   writeRHooks(package.name, Rdir)
-  # Need a way to collect packet names.
-  #  kept <- findKeptNames(packetNames, getAuxFunNames())
-  #  mgr <- dllEnvMgr(package.name, packetNames[!kept])
   
   # Write out data
   if (length(memberData) > 0) {
