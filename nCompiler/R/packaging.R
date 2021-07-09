@@ -260,7 +260,7 @@ nWritePackage <- function(...,
 
   # Cannot do this until all necessary header files generated, as well:
   #
-#  if (doSerialize()) # Gate by nCompiler option?
+  if (doSerialize()) # Gate by nCompiler option?
      RcppPacket_list[[ length(RcppPacket_list) + 1]] <- cppDefs_2_RcppPacket(make_serialization_cppDef(), "serialization_")
 
   # DLL environment names are the additional auxiliaries to be compiled.
