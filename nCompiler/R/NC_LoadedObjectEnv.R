@@ -45,24 +45,6 @@ setExtptr <- function(env, xptr) {
 }
 
 
-#' Embeds a compiled class generator within a method returning the DLLenv manager.
-#' @return embedded generator method.
-dllEmbedGenerator <- function(generatorFun, mgr) {
-  force(generatorFun)
-  if (!is.function(generatorFun))
-      stop(paste0("generator function has non-function class ",
-                  paste0(class(generatorFun), collapse = " ")))
-
-  # Return value is a method which both invokes the generator and assigns the
-  # DLL environment to the newly generated object.
-  embeddedGeneratorFun <- function() {
-    newObj <- generatorFun()
-    parent.env(newObj) <- mgr()
-    newObj
-  }
-}
-
-
 ## Next two will be deprecated
 loadedObjectEnv_serialized <- function(env) {
   if(!is.loadedObjectEnv(env))

@@ -50,3 +50,30 @@ findKeptNames <- function(funNames, auxNames) {
   }
   keep
 }
+
+
+
+#' Embeds a compiled class generator within a method returning the DLLenv manager.
+#' @return embedded generator method.
+dllEmbedGenerator <- function(generatorFun, mgr) {
+  force(generatorFun)
+  if (!is.function(generatorFun))
+      stop(paste0("generator function has non-function class ",
+                  paste0(class(generatorFun), collapse = " ")))
+
+  # Return value is a method which both invokes the generator and assigns the
+  # DLL environment to the newly generated object.
+  embeddedGeneratorFun <- function() {
+    newObj <- generatorFun()
+    parent.env(newObj) <- mgr()
+    newObj
+  }
+}
+
+
+embedGenerators <- function(dllFun, mgr) {
+  found <- grepl('new_', names(dllFun))
+  for (i in which(found)) {
+    dllEmbedGenerator(dllFun[i], mgr)
+  }
+}

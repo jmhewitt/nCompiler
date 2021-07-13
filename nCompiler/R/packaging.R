@@ -894,6 +894,8 @@ writePackageClones <- function(pkgName, Rdir) {
   writeLines(c('get_DLLenv <- ', deparse(get_DLLenv)), con)
   writeLines(c('dllEnvMgr <- ', deparse(dllEnvMgr)), con)
   writeLines(c('findKeptNames <- ', deparse(findKeptNames)), con)
+  writeLines(c('dllEmbedGenerator <- ', deparse(dllEmbedGenerator)), con)
+  writeLines(c('embedGenerators <-', deparse(embedGenerators)), con)
   close(con)
 }
 
@@ -910,6 +912,7 @@ writeDLLMgr <- function(pkgName, Rdir) {
     paste0('\tkept <- findKeptNames(fName, c(', auxNames, '))'),
 #    paste0('print(paste0(sum(!kept) , " auxiliary functions found"))'),
     paste0('\tmgr <- dllEnvMgr(nrl[!kept], \'', pkgName, '\')'),
+    paste0('embedGenerators(nrl[kept], mgr)'),
     '}'
   )
   mgrFilePath <- file.path(Rdir, 'dllEnvMgr.R')
