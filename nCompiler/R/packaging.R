@@ -257,15 +257,9 @@ nWritePackage <- function(...,
   Rdir <- file.path(pkgDir, "R")
   srcDir <- file.path(pkgDir, "src")
 
-
-  # Cannot do this until all necessary header files generated, as well:
-  #
+  set_nOption("serialize", TRUE)
   if (doSerialize()) # Gate by nCompiler option?
      RcppPacket_list[[ length(RcppPacket_list) + 1]] <- cppDefs_2_RcppPacket(make_serialization_cppDef(), "serialization_")
-
-  # DLL environment names are the additional auxiliaries to be compiled.
-  dllEnvNames <- if (doSerialize()) getAuxFunNames() else NULL
-  mgr <- dllEnvMgr(package.name, dllEnvNames)
 
   # Loops over each object again, plus any new ones.
   for (i in 1:length(RcppPacket_list)) {
@@ -280,8 +274,6 @@ nWritePackage <- function(...,
     nCompiler:::writeCpp_nCompiler(RcppPacket_list[[i]],
                                    dir = codeDir)
     if (i <= length(objs) && isNCgenerator(objs[[i]])) {
-      # Generator wrapper expects a compiled function, which objs[[i]] is not:
-      #      objs[[i]] <- wrapNCgenerator_for_DLLenv(objs[[i]], mgr)
       if (isTRUE(nClass_full_interface)) {
         ## Write the nClass full interface to the package's R directory
         full_interface <- build_compiled_nClass(objs[[i]], quoted = TRUE)
@@ -913,11 +905,11 @@ writeDLLMgr <- function(pkgName, Rdir) {
   deparsed_mgr = c(
     autoRHeader(pkgName),
     paste0('setDLLEnvMgr <- function() {'),
-    paste0('\tnrl <- getDLLRegisteredRoutines(\'', pkgName, '\')'),
-    paste0('\tfName <- lapply(nrl[[2]], function(rout) { rout$name })'),
-    paste0('\tkept <- findKeptNames(fName, c(', auxNames, '))'),
+    paste0('\tnrl <- getDLLRegisteredRoutines(\'', pkgName, '\')[[2]]'),
+    paste0('\tfName <- lapply(nrl, function(rout) { rout$name })'),
+    paste0('\tkept <- findKeptNames(names(nrl), c(', auxNames, '))'),
     paste0('print(paste0(sum(!kept) , " auxiliary functions found"))'),
-    paste0('\tmgr <- dllEnvMgr(\'', pkgName, '\', fName[!kept])'),
+    paste0('\tmgr <- dllEnvMgr(nrl[!kept], \'', pkgName, '\')'),
     '}'
   )
   mgrFilePath <- file.path(Rdir, 'dllEnvMgr.R')

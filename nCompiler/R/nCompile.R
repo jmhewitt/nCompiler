@@ -55,9 +55,9 @@ nCompile <- function(...,
                               cacheDir = cacheDir,
                               env = resultEnv,
                               returnList = returnList)
-  ## 'ans' consists of all compiled function names and the corresponding environments.
+  ## 'ans' consists of all compiled function environments, possibly annotated with names.
   keep <- findKeptNames(names(ans), getAuxFunNames())
-  mgr <- dllEnvMgr("nCompiler", if (is.list(ans)) ans[!keep] else NULL)
+  mgr <- dllEnvMgr(if (is.list(ans)) ans[!keep] else NULL, "nCompiler")
 
   compiledFn <- if (sum(keep) > 1 || returnList)
                   ans[keep]
@@ -78,7 +78,9 @@ nCompile <- function(...,
     })
 
     newNames <- names(compiledFn)
+    # This looks wrong:  only generator names are prepended with 'new_', not arbitrary user functions.
     SEXPgen_names <- paste0("new_", cpp_names)
+
     for(i in seq_along(units)) {
       iRes <- which(SEXPgen_names[i] == names(compiledFn))
       if(length(iRes) != 1) {
@@ -115,11 +117,11 @@ nCompile <- function(...,
 #' @return augmented class generator, full R6 class or both.
 setup_nClass_interface <- function(interfaceType,
                                    NC,
-                                   compiledFn,
+                                   cGenerator,
                                    mgr,
                                    env,
                                    tryError = TRUE) {
-  wrappedFn <- dllCompiledGenerator(compiledFn, mgr)
+  wrappedFn <- dllEmbedGenerator(cGenerator, mgr)
   if (interfaceType == "generic")
     return(wrappedFn)
 

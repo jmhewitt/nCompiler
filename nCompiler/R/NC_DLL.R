@@ -9,10 +9,8 @@
 make_DLLenv <- function(dllFuns, pkgName) {
   dllEnv <- new.env(parent = getNamespace(pkgName))
 
-  i <- 1
-  for (dllFun in dllFuns) {
-    dllEnv[[names(dllFuns)[i]]] <- dllFun
-    i <- i + 1
+  for (i in seq_along(dllFuns)) {
+    dllEnv[[names(dllFuns)[i]]] <- dllFuns[i]
   }
   
   class(dllEnv) <- "nC_DLL_env"
@@ -27,7 +25,7 @@ get_DLLenv <- function(obj) {
 
 #' Stateful version of above.
 #' @return DLL environment getter method.
-dllEnvMgr <- function(pkgName, dllFuns) {
+dllEnvMgr <- function(dllFuns, pkgName) {
   dllEnv <- make_DLLenv(dllFuns, pkgName)
 
   ## Getter for the current DLL environment.

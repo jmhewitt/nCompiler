@@ -88,6 +88,6 @@ nCompile_nClass <- function(NC,
   if (sum(keep) > 1)
     warning("nCompile_nClass returns more than one function.")
 
-  mgr <- dllEnvMgr(if (is.list(newCobjFun)) newCobjFun[!keep] else NULL)
+  mgr <- dllEnvMgr(if (is.list(newCobjFun)) newCobjFun[!keep] else NULL, "nCompiler")
   setup_nClass_interface(match.arg(interface), NC, newCobjFun, mgr, env = env, tryError = FALSE)
 }
