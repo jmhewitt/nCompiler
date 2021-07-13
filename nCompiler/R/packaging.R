@@ -907,8 +907,8 @@ writeDLLMgr <- function(pkgName, Rdir) {
     paste0('setDLLEnvMgr <- function() {'),
     paste0('\tnrl <- getDLLRegisteredRoutines(\'', pkgName, '\')[[2]]'),
     paste0('\tfName <- lapply(nrl, function(rout) { rout$name })'),
-    paste0('\tkept <- findKeptNames(names(nrl), c(', auxNames, '))'),
-    paste0('print(paste0(sum(!kept) , " auxiliary functions found"))'),
+    paste0('\tkept <- findKeptNames(fName, c(', auxNames, '))'),
+#    paste0('print(paste0(sum(!kept) , " auxiliary functions found"))'),
     paste0('\tmgr <- dllEnvMgr(nrl[!kept], \'', pkgName, '\')'),
     '}'
   )

@@ -41,7 +41,7 @@ findKeptNames <- function(funNames, auxNames) {
   keep <- rep(TRUE, if (is.list(funNames)) length(funNames) else 1)
   for(DLLname in auxNames) {
     found <- grepl(DLLname, funNames)
-    if(any(found)) {
+    if (any(found)) {
       i <- which(found)
       if(length(i) != 1)
         stop(paste("Auxilliary function ", DLLname, " is duplicated"));
