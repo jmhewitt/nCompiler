@@ -885,23 +885,22 @@ writeRHooks <- function(pkgName, Rdir) {
 }
 
 
-#' Clones 'nCompiler' functions for inclusion by generated package.
+#' Clones text of functions responsible for generating the DLL environment.
 writePackageClones <- function(pkgName, Rdir) {
   pkgFilePath <- file.path(Rdir, 'NC_DLL.R')
   con <- file(pkgFilePath, open = 'w')
   writeLines(autoRHeader(pkgName), con)
-  writeLines(c('make_DLLenv <- ', deparse(make_DLLenv)), con)
-  writeLines(c('get_DLLenv <- ', deparse(get_DLLenv)), con)
-  writeLines(c('dllEnvMgr <- ', deparse(dllEnvMgr)), con)
-  writeLines(c('findKeptNames <- ', deparse(findKeptNames)), con)
-  writeLines(c('dllEmbedGenerator <- ', deparse(dllEmbedGenerator)), con)
-  writeLines(c('embedGenerators <-', deparse(embedGenerators)), con)
+  writeLines(c('\nmake_DLLenv <- ', deparse(make_DLLenv)), con)
+  writeLines(c('\nget_DLLenv <- ', deparse(get_DLLenv)), con)
+  writeLines(c('\ndllEnvMgr <- ', deparse(dllEnvMgr)), con)
+  writeLines(c('\nfindKeptNames <- ', deparse(findKeptNames)), con)
+  writeLines(c('\ndllEmbedGenerator <- ', deparse(dllEmbedGenerator)), con)
   close(con)
 }
 
 
-#' @return function constructing a DLL environment manager for the
-#' package reloader.
+#' @return function constructing a DLL environment manager early during
+#' package reloading.
 writeDLLMgr <- function(pkgName, Rdir) {
   auxNames <- paste0('\'', paste(getAuxFunNames(), collapse="\',\'"), '\'')
   deparsed_mgr = c(
@@ -910,9 +909,7 @@ writeDLLMgr <- function(pkgName, Rdir) {
     paste0('\tnrl <- getDLLRegisteredRoutines(\'', pkgName, '\')[[2]]'),
     paste0('\tfName <- lapply(nrl, function(rout) { rout$name })'),
     paste0('\tkept <- findKeptNames(fName, c(', auxNames, '))'),
-#    paste0('print(paste0(sum(!kept) , " auxiliary functions found"))'),
     paste0('\tmgr <- dllEnvMgr(nrl[!kept], \'', pkgName, '\')'),
-    paste0('embedGenerators(nrl[kept], mgr)'),
     '}'
   )
   mgrFilePath <- file.path(Rdir, 'dllEnvMgr.R')

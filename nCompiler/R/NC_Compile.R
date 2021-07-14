@@ -84,10 +84,5 @@ nCompile_nClass <- function(NC,
     return(newCobjFun)
   }
 
-  keep <- findDLLNames(newCobFun, getAuxFunNames())
-  if (sum(keep) > 1)
-    warning("nCompile_nClass returns more than one function.")
-
-  mgr <- dllEnvMgr(if (is.list(newCobjFun)) newCobjFun[!keep] else NULL, "nCompiler")
-  setup_nClass_interface(match.arg(interface), NC, newCobjFun, mgr, env = env, tryError = FALSE)
+  setup_nClass_interface(match.arg(interface), NC, newCobjFun, env = env, tryError = FALSE)
 }

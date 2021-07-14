@@ -95,7 +95,7 @@ nCompile <- function(...,
         compiledFn[[iRes]] <- setup_nClass_interface(interfaceType,
                                               units[[i]],
                                               compiledFn[[iRes]],
-                                              mgr,
+                                              mgr = mgr,
                                               env = resultEnv)        
       }
     }
@@ -106,7 +106,7 @@ nCompile <- function(...,
       compiledFn <- setup_nClass_interface(interfaceType,
                                            units[[1]],
                                            compiledFn,
-                                           mgr,
+                                           mgr = mgr,
                                            env = resultEnv)
     }
   }
@@ -117,11 +117,18 @@ nCompile <- function(...,
 #' @return augmented class generator, full R6 class or both.
 setup_nClass_interface <- function(interfaceType,
                                    NC,
-                                   cGenerator,
-                                   mgr,
+                                   fnCompiled,
+                                   mgr = NULL,
                                    env,
                                    tryError = TRUE) {
-  wrappedFn <- dllEmbedGenerator(cGenerator, mgr)
+  if (is.null(mgr)) {
+    keep <- findDLLNames(names(fnCompiled), getAuxFunNames())
+    if (sum(keep) > 1)
+      warning("class generator compilation yields more than one function.")
+    mgr <- dllEnvMgr(if (is.list(fnCompiled)) fnCompiled[!keep] else NULL, "nCompiler")
+  }
+  
+  wrappedFn <- dllEmbedGenerator(fnCompiled, mgr)
   if (interfaceType == "generic")
     return(wrappedFn)
 
