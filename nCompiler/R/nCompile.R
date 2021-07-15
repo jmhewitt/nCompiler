@@ -122,7 +122,7 @@ setup_nClass_interface <- function(interfaceType,
                                    env,
                                    tryError = TRUE) {
   if (is.null(mgr)) {
-    keep <- findDLLNames(names(fnCompiled), getAuxFunNames())
+    keep <- findKeptNames(names(fnCompiled), getAuxFunNames())
     if (sum(keep) > 1)
       warning("class generator compilation yields more than one function.")
     mgr <- dllEnvMgr(if (is.list(fnCompiled)) fnCompiled[!keep] else NULL, "nCompiler")

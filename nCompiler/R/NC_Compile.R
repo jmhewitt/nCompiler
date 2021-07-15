@@ -84,5 +84,7 @@ nCompile_nClass <- function(NC,
     return(newCobjFun)
   }
 
+  # All paths reaching nCompile_nClass() appear to return before
+  # reaching the setup call below.
   setup_nClass_interface(match.arg(interface), NC, newCobjFun, env = env, tryError = FALSE)
 }
