@@ -4,16 +4,17 @@
 ## 'nCompiler' within generated packages, however, making this distinction
 ## irrelevant.
 
-
 #' @return new environment referencing DLL-scope auxiliary functions.
 make_DLLenv <- function(dllFuns, pkgName) {
   dllEnv <- new.env(parent = getNamespace(pkgName))
 
   for (i in seq_along(dllFuns)) {
-    if (!is.function(dllFuns[i]))
-      warning(paste0("DLL environment entry ", names(dllFuns)[i], " has non-function class ", class(dllFuns[i])))
+    dllFun <- if (is.list(dllFuns)) dllFuns[[i]] else dllFuns[i]
+    dllFunName <- names(dllFuns)[i]
+    if (!is.function(dllFun))
+      warning(paste0("DLL environment entry ", dllFunName, " has non-function class ", class(dllFun)))
     
-    dllEnv[[names(dllFuns)[i]]] <- dllFuns[i]
+    dllEnv[[dllFunName]] <- dllFun
   }
   
   class(dllEnv) <- "nC_DLL_env"
