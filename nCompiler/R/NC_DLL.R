@@ -10,6 +10,9 @@ make_DLLenv <- function(dllFuns, pkgName) {
   dllEnv <- new.env(parent = getNamespace(pkgName))
 
   for (i in seq_along(dllFuns)) {
+    if (!is.function(dllFuns[i]))
+      warning(paste0("DLL environment entry ", names(dllFuns)[i], " has non-function class ", class(dllFuns[i])))
+    
     dllEnv[[names(dllFuns)[i]]] <- dllFuns[i]
   }
   
@@ -38,8 +41,8 @@ dllEnvMgr <- function(dllFuns, pkgName) {
 #' Identifies indices of kept (non-DLL helper) function names.
 #' @return boolean with values T/F as to whether name at index is/isn't kept.
 findKeptNames <- function(funNames, auxNames) {
-  keep <- rep(TRUE, if (is.list(funNames)) length(funNames) else 1)
-  for(DLLname in auxNames) {
+  keep <- rep(TRUE, length(funNames))
+  for (DLLname in auxNames) {
     found <- grepl(DLLname, funNames)
     if (any(found)) {
       i <- which(found)
@@ -48,6 +51,7 @@ findKeptNames <- function(funNames, auxNames) {
       keep[i] <- FALSE
     }
   }
+
   keep
 }
 
@@ -67,13 +71,5 @@ dllEmbedGenerator <- function(generatorFun, mgr) {
     newObj <- generatorFun()
     parent.env(newObj) <- mgr()
     newObj
-  }
-}
-
-
-embedGenerators <- function(dllFun, mgr) {
-  found <- grepl('new_', names(dllFun))
-  for (i in which(found)) {
-    dllEmbedGenerator(dllFun[i], mgr)
   }
 }

@@ -861,7 +861,7 @@ autoRHeader <- function(pkgName) {
 }
 
 
-#' Outputs 'Rhooks.R' for .onLoad() call on package reload.
+#' Outputs 'Rhooks.R' for .onAttach() call on package reload.
 ## The only client is currently the DLL manager, which ensures
 ## a clean DLL environment is built for the class generators.
 writeRHooks <- function(pkgName, Rdir) {
@@ -873,7 +873,7 @@ writeRHooks <- function(pkgName, Rdir) {
     
   deparsed_hooks = c(
     autoRHeader(pkgName),
-    '.onLoad <- function(...) {',
+    '.onAttach <- function(...) {',
     '\tsetDLLEnvMgr()',
     '}'
   )
@@ -906,10 +906,10 @@ writeDLLMgr <- function(pkgName, Rdir) {
   deparsed_mgr = c(
     autoRHeader(pkgName),
     paste0('setDLLEnvMgr <- function() {'),
-    paste0('\tnrl <- getDLLRegisteredRoutines(\'', pkgName, '\')[[2]]'),
-    paste0('\tfName <- lapply(nrl, function(rout) { rout$name })'),
+    paste0('\tfName <- lsf.str(envir = asNamespace(\'', pkgName, '\'))'),
     paste0('\tkept <- findKeptNames(fName, c(', auxNames, '))'),
-    paste0('\tmgr <- dllEnvMgr(nrl[!kept], \'', pkgName, '\')'),
+    # Remove superassignment when package serialization is working:
+    paste0('\tmgr <<- dllEnvMgr(fName[!kept], \'', pkgName, '\')'),
     '}'
   )
   mgrFilePath <- file.path(Rdir, 'dllEnvMgr.R')
