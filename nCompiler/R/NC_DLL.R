@@ -9,11 +9,11 @@ make_DLLenv <- function(dllFuns, pkgName) {
   dllEnv <- new.env(parent = getNamespace(pkgName))
 
   for (i in seq_along(dllFuns)) {
-    dllFun <- if (is.list(dllFuns)) dllFuns[[i]] else dllFuns[i]
+    dllFun <- dllFuns[[i]]
     dllFunName <- names(dllFuns)[i]
     if (!is.function(dllFun))
       warning(paste0("DLL environment entry ", dllFunName, " has non-function class ", class(dllFun)))
-    
+
     dllEnv[[dllFunName]] <- dllFun
   }
   
@@ -39,7 +39,7 @@ dllEnvMgr <- function(dllFuns, pkgName) {
 }
 
 
-#' Identifies indices of kept (non-DLL helper) function names.
+#' Identifies indices of kept (non-DLL helper) function references.
 #' @return boolean with values T/F as to whether name at index is/isn't kept.
 findKeptNames <- function(funNames, auxNames) {
   keep <- rep(TRUE, length(funNames))

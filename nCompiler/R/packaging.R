@@ -893,6 +893,7 @@ writePackageClones <- function(pkgName, Rdir) {
   writeLines(c('\nmake_DLLenv <- ', deparse(make_DLLenv)), con)
   writeLines(c('\nget_DLLenv <- ', deparse(get_DLLenv)), con)
   writeLines(c('\ndllEnvMgr <- ', deparse(dllEnvMgr)), con)
+  writeLines(c('\nfunctionRefs <- ', deparse(functionRefs)), con)
   writeLines(c('\nfindKeptNames <- ', deparse(findKeptNames)), con)
   writeLines(c('\ndllEmbedGenerator <- ', deparse(dllEmbedGenerator)), con)
   close(con)
@@ -906,10 +907,10 @@ writeDLLMgr <- function(pkgName, Rdir) {
   deparsed_mgr = c(
     autoRHeader(pkgName),
     paste0('setDLLEnvMgr <- function() {'),
-    paste0('\tfName <- lsf.str(envir = asNamespace(\'', pkgName, '\'))'),
-    paste0('\tkept <- findKeptNames(fName, c(', auxNames, '))'),
+    paste0('\tfRef <- functionRefs(\'', pkgName, '\')'),
+    paste0('\tkept <- findKeptNames(names(fRef), c(', auxNames, '))'),
     # Remove superassignment when package serialization is working:
-    paste0('\tmgr <<- dllEnvMgr(fName[!kept], \'', pkgName, '\')'),
+    paste0('\tmgr <<- dllEnvMgr(fRef[!kept], \'', pkgName, '\')'),
     '}'
   )
   mgrFilePath <- file.path(Rdir, 'dllEnvMgr.R')
@@ -918,3 +919,10 @@ writeDLLMgr <- function(pkgName, Rdir) {
   close(con)
 }
 
+
+functionRefs <- function(pkgName) {
+  env <- as.environment(asNamespace(pkgName))
+  fNames <- lsf.str(env=env)
+  structure(sapply(fNames, function(fName) { env[[fName]] }),
+            names = fNames)
+}
