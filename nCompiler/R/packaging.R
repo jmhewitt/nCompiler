@@ -257,7 +257,6 @@ nWritePackage <- function(...,
   Rdir <- file.path(pkgDir, "R")
   srcDir <- file.path(pkgDir, "src")
 
-  set_nOption("serialize", TRUE)
   if (doSerialize()) # Gate by nCompiler option?
      RcppPacket_list[[ length(RcppPacket_list) + 1]] <- cppDefs_2_RcppPacket(make_serialization_cppDef(), "serialization_")
 

@@ -235,11 +235,10 @@ get_deserialize_fun <- function(loe) {
 }
 
 
-getSerializationMgr <- function(LOE) {
-  if (class(LOE) != "loadedObjectEnv") {
-    stop(paste("Serialization manager not present in class ", class(LOE)))
-  }
-  mgr <- getElement(parent.env(LOE), getSerializationManagerName())
+#' Serialization manager should be present in parent environment for
+#' either LoadedObjectEnvironment or R6 class.
+getSerializationMgr <- function(obj) {
+  mgr <- getElement(parent.env(obj), getSerializationManagerName())
   if (is.null(mgr)) {
     stop(paste0("Serialization manager ", getSerializationManagerName(), " not found in parent environment."))
   }
