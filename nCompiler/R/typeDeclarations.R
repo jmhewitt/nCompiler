@@ -232,6 +232,9 @@ typeDeclarationList <- list(
                            type = "double") {
     nSparseType(scalarType = type, nDim = 1)
   },
+  nSparseCholesky = function(...) {
+    symbolSparseCholesky$new(...)
+  },
   
   ## determine type from an evaluated object
   typeDeclarationFromObject = function(x) {

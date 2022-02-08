@@ -461,6 +461,34 @@ symbolSparse <- R6::R6Class(
 )
 
 
+symbolSparseCholesky <- R6::R6Class(
+  classname = "symbolSparseCholesky",
+  inherit = symbolBase,
+  portable = TRUE,
+  public = list(
+    initialize = function(...) {
+      # TODO: The type variable is essential to set for compilation, 
+      #  but we depart from the convention of what the variable represents
+      super$initialize(type = 'SparseCholesky', ...)
+    },
+    shortPrint = function() {
+      'spChol'
+    },
+    print = function() {
+      writeLines(paste0(self$name, ': SparseCholesky'))
+    },
+    genCppVar = function() {
+      res <- cppVarFullClass$new(
+        name = self$name,
+        baseType = "SparseCholesky"
+      )
+      if(self$isRef) {
+        res$ref <- TRUE
+      }
+      return(res)
+    }
+  )
+)
 
 ## This was an exercise in conversion from the old system.
 ## I'm not sure this is or will be needed.

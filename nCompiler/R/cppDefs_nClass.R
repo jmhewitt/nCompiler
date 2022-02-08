@@ -43,7 +43,8 @@ cpp_nClassBaseClass <- R6::R6Class(
       self$Hincludes <- c(self$Hincludes,
                           "<Rinternals.h>",
                           nCompilerIncludeFile("nCompiler_Eigen.h"),
-                          nCompilerIncludeFile("nCompiler_TBB.h"))
+                          nCompilerIncludeFile("nCompiler_TBB.h"),
+                          nCompilerIncludeFile("predefined.h"))
       CPPincludes <<- list()
       usingEigen <- TRUE
       ## The following need to be here, not just in cpp_nFunction, in case there is a nClass with no methods.

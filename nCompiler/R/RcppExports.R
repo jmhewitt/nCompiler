@@ -25,6 +25,10 @@ new_EigenDecomp <- function() {
     .Call('_nCompiler_new_EigenDecomp', PACKAGE = 'nCompiler')
 }
 
+new_SparseCholesky <- function() {
+    .Call('_nCompiler_new_SparseCholesky', PACKAGE = 'nCompiler')
+}
+
 rcpp_hello_world <- function() {
     .Call('_nCompiler_rcpp_hello_world', PACKAGE = 'nCompiler')
 }

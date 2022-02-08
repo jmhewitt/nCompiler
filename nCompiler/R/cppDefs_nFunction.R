@@ -21,11 +21,13 @@ cpp_nFunctionClass <- R6::R6Class(
       self$Hincludes <- c(self$Hincludes,
                           "<Rinternals.h>",
                           nCompilerIncludeFile("nCompiler_Eigen.h"),
-                          nCompilerIncludeFile("nCompiler_TBB.h")
+                          nCompilerIncludeFile("nCompiler_TBB.h"),
+                          nCompilerIncludeFile("predefined.h")
       )
       self$CPPincludes <- c(self$CPPincludes,
                             nCompilerIncludeFile("nCompiler_Eigen.h"),
                             nCompilerIncludeFile("nCompiler_TBB.h"),
+                            nCompilerIncludeFile("predefined.h"),
                             '<Rmath.h>',
                             '<math.h>'
       )

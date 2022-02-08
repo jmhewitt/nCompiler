@@ -19,7 +19,12 @@ make_nCompiler_plugin <- function(nCompiler_pluginEnv) {
                                  else
                                    "")
     result$env$PKG_CXXFLAGS <- "-std=c++11"
-    result$env$PKG_LIBS <- get_nCompLocal_PKG_LIBS_entry()
+    # result$env$PKG_LIBS <- get_nCompLocal_PKG_LIBS_entry()
+    result$env$PKG_LIBS <- paste0(
+      # paste0("-L\"", file.path(system.file(file.path("libs"), package = "nCompiler"), "nCompiler.so"), "\""),
+      file.path(system.file(file.path("libs"), package = "nCompiler"), 'nCompiler.so'),
+      get_nCompLocal_PKG_LIBS_entry()
+    )
     ## Makevars doesn't work
     ## result$Makevars <- "CXX_STD=CXX11" does not seem to work
     result
@@ -45,7 +50,12 @@ make_nCompiler_Eigen_plugin <- function(nCompiler_pluginEnv) {
                                      else
                                        "")
     result$env$PKG_CXXFLAGS <- "-std=c++11"
-    result$env$PKG_LIBS <- get_nCompLocal_PKG_LIBS_entry()
+    # result$env$PKG_LIBS <- get_nCompLocal_PKG_LIBS_entry()
+    result$env$PKG_LIBS <- paste0(
+      # paste0("-L\"", file.path(system.file(file.path("libs"), package = "nCompiler"), "nCompiler.so"), "\""),
+      file.path(system.file(file.path("libs"), package = "nCompiler"), 'nCompiler.so'),
+      get_nCompLocal_PKG_LIBS_entry()
+    )
     if(isTRUE(get_nOption('compilerOptions')$throwEigenErrors)) {
       # replace include directives to enable Eigen errors
       preamble = system.file(file.path('include', 'nCompiler', 

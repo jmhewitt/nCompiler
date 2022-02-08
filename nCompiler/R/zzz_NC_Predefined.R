@@ -38,3 +38,18 @@ EigenDecomp <- nClass(
 #' @export
 C_EigenDecomp <- build_compiled_nClass(EigenDecomp,
                                          function() new_EigenDecomp())
+
+
+#' @export
+SparseCholesky <- nClass(
+  classname = 'SparseCholesky',
+  Cpublic = list(
+    R = 'nSparseMatrix',
+    P = 'integerVector'
+  )
+)
+
+#' @export
+C_SparseCholesky <- build_compiled_nClass(SparseCholesky,
+                                          function() new_SparseCholesky())
+
