@@ -183,20 +183,26 @@ makeReturnVector <- function(fillValue, length, recycle) {
     }
 }
 
+#' do the work of an eigen decompositions via nEigen when called from R
+#'
+#' @export
+nEigenImpl <- function(x, decomp) {
+  e <- eigen(x)
+  decomp$values <- e$values
+  decomp$vectors <- e$vectors
+  decomp
+}
+
 #' Spectral Decomposition of a Matrix
 #' 
-#' In a \code{nFunction}, \code{nEigen} is identical to \code{eigen}
-#'
-#' @details This function is similar to R's \code{\link{eigen}} function, but 
-#'   can be used in a nFunction and compiled using \code{nCompile}.  
-#' 
-#' @param x a numeric or complex matrix whose spectral decomposition is to be 
-#'   computed. Logical matrices are coerced to numeric.
+#' implementation details for nEigen
 #'
 #' @export
 #' 
-nEigen <- function(x) {
-  eigen(x)
+wrapNEigenImpl <- function(x) {
+  ans <- EigenDecomp$new()
+  ans <- nEigenImpl(x, ans)
+  return(ans)
 }
 
 #' Extract or replace the diagonal of matrix

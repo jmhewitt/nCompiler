@@ -49,3 +49,10 @@ EigenDecomp <- nClass(
 ## #' @export
 ## C_EigenDecomp <- build_compiled_nClass(EigenDecomp,
 ##                                          function() new_EigenDecomp())
+
+nEigen <- nFunction(
+  name = 'nEigen',
+  fun = wrapNEigenImpl, 
+  argTypes = list(x = 'numericMatrix'), 
+  returnType = 'EigenDecomp'
+)

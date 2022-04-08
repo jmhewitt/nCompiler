@@ -775,7 +775,7 @@ assignOperatorDef(
 )
 
 assignOperatorDef(
-  'nEigen',
+  'nEigenImpl',
   list(
     labelAbstractTypes = list(
       handler = 'nEigen'
