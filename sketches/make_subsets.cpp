@@ -9,10 +9,11 @@
 
 namespace nCompiler {
 
+    // template meta-programming aid
     template<typename T>
     struct BaseType { typedef T type; };
 
-    // partial specialization to get non-reference type for template ref. params
+    // partial specialization to get non-ref. type from template ref. params
     template<typename T>
     struct BaseType<T&> { typedef T type; };
 
@@ -107,6 +108,11 @@ Eigen::Tensor<double, 1> TestNestedDroppingRval(
         Eigen::Index cdim2,
         Eigen::Index coffset2
         ) {
+    // this does (nested) subsetting similar to makeStridedTensorMap, but
+    // the operations are explicit, and there is no need for formal IndexBlock
+    // classes, which implicitly define the subsetting operations to use.
+    // the strategy below also does not require any template parameters to be
+    // explicitly specified, such as the object's output dimension
     return DropDim(cdim2, coffset2).op(DropDim(cdim1, coffset1).op(x));
 }
 
@@ -118,7 +124,9 @@ Eigen::Tensor<double, 1> TestNestedDroppingLval(
         Eigen::Index cdim2,
         Eigen::Index coffset2
         ) {
+    // the output of the tools are Eigen operations, which can be used elsewhere
     auto s1 = DropDim(cdim1, coffset1).op(x);
+    // the tools can also work with Eigen expressions
     return DropDim(cdim2, coffset2).op(s1);
 }
 
