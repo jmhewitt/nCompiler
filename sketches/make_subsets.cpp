@@ -216,3 +216,23 @@ Eigen::Tensor<double, 1> TestAltMixedOp(
 ) {
     return DropDim(0,coffset3).op(FullDim().op(FullDim().op(SubView(1,cstart1,cend1).op(DropDim(2,coffset2).op(x)))));
 }
+
+/**
+ * operations like x[,2,][i,j] without operator=.  Code like this might be
+ * useful as a means to support sequences of subset operators (i.e., the demo
+ * x[,2,][i,j]).  Otherwise, it is probably more efficient to use operator() to
+ * directly access elements of a tensor (i.e., x[3,1,4]).  The two scenarios can
+ * probably be detected by modifying the Bracket handler in nCompiler to
+ * recognize the two scenarios by checking to see what the caller for Bracket
+ * is.  If the caller for Bracket is another Bracket, (or if the type being
+ * subsetted is a TensorRefBlock) then we'll use this strategy instead.
+ */
+ // [[Rcpp::export]]
+ double TestImplicitEval(
+     Eigen::Tensor<double, 3> x,
+     Eigen::Index coffset1,
+     Eigen::Index ci,
+     Eigen::Index cj
+ ) {
+    return static_cast<Eigen::Tensor<double, 0> >(DropDim(0,ci).op(DropDim(1,cj).op(FullDim().op(DropDim(1,coffset1).op(FullDim().op(x))))))();
+ }
