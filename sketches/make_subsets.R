@@ -88,6 +88,14 @@ expect_equivalent(
 
 # Alternatives can support subsets of subsets
 expect_equivalent(
+  y[,3:5,1][8,], 
+  TestAltMixedOpListInit(
+    x = y, cstart1 = 2, cend1 = 4, coffset2 = 0, coffset3 = 7
+  )
+)
+
+# Alternatives can support subsets of subsets
+expect_equivalent(
   y[,2,][4,10], 
   TestImplicitEval(x = y, coffset1 = 1, ci = 3, cj = 9)
 )

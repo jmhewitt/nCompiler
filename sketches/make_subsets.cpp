@@ -25,6 +25,9 @@ namespace nCompiler {
      struct FullDim {
          template<typename T>
          auto op(T&& x) -> decltype(x) { return std::forward<T>(x); }
+
+         template<typename T>
+         auto operator()(T&& x) -> decltype(op(x)) { return op(x); }
      };
 
     /**
@@ -45,6 +48,9 @@ namespace nCompiler {
         ) {
             return x.chip(m_offset, m_dim);
         }
+
+        template<typename T>
+        auto operator()(T&& x) -> decltype(op(x)) { return op(x); }
 
     };
 
@@ -88,6 +94,9 @@ namespace nCompiler {
             // execute slice
             return x.slice(offsets, extents);
         }
+
+        template<typename T>
+        auto operator()(T&& x) -> decltype(op(x)) { return op(x); }
 
     };
 
@@ -235,6 +244,28 @@ Eigen::Tensor<double, 1> TestAltMixedOp(
     Eigen::Index coffset3
 ) {
     return DropDim(0,coffset3).op(FullDim().op(FullDim().op(SubView(1,cstart1,cend1).op(DropDim(2,coffset2).op(x)))));
+}
+
+/**
+ * operations like x[,3:5,1][8,]..., but implemented with list initialization
+ * and overloaded function call operators as a possible way to improve
+ * readability of generated code.  here the syntax for generated code makes the
+ * subsetting resemble a function call with a "dynamically generated" function,
+ * which of course, is really just the class.  So, for nCompiler code
+ * generation, the hope is that this implementation will be simpler to generate
+ * c++ code for.
+ *
+ * Syntax: SUBSETTYPE{PARAMS}(OBJ. TO SUBSET)
+ */
+// [[Rcpp::export]]
+Eigen::Tensor<double, 1> TestAltMixedOpListInit(
+    Eigen::Tensor<double, 3> x,
+    Eigen::Index cstart1,
+    Eigen::Index cend1,
+    Eigen::Index coffset2,
+    Eigen::Index coffset3
+) {
+    return DropDim{0,coffset3}(FullDim{}(FullDim{}(SubView{1,cstart1,cend1}(DropDim{2,coffset2}(x)))));
 }
 
 /**
