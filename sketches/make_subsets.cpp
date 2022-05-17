@@ -18,6 +18,14 @@ namespace nCompiler {
     struct BaseType<T&> { typedef T type; };
 
     /**
+     * Do not perform any subsetting
+     */
+     struct FullDim {
+         template<typename T>
+         auto op(T&& x) -> decltype(x) { return std::forward<T>(x); }
+     };
+
+    /**
      * Implement an Eigen chip operation
      */
     struct DropDim {
@@ -25,7 +33,7 @@ namespace nCompiler {
         Eigen::Index m_dim, m_offset;
 
         // constructor specifies parameters of the operation
-        DropDim(Eigen::Index & dim, Eigen::Index & offset) :
+        DropDim(Eigen::Index dim, Eigen::Index offset) :
             m_dim(dim), m_offset(offset) { }
 
         template<typename T>
@@ -47,7 +55,7 @@ namespace nCompiler {
         Eigen::Index m_dim, m_start, m_end;
 
         // constructor specifies parameters of the operation
-        SubView(Eigen::Index & dim, Eigen::Index & start, Eigen::Index & end) :
+        SubView(Eigen::Index dim, Eigen::Index start, Eigen::Index end) :
             m_dim(dim), m_start(start), m_end(end) { }
 
         template<typename T>
@@ -83,13 +91,13 @@ namespace nCompiler {
 
 }
 
-using namespace nCompiler;
-
 /*
  * examples of ideal c++ code for reproducing various contiguous-block
  * subsetting operations from R.  the strategy is to be able to generate
  * "chainable" code that requires little overhead for use.
  */
+
+using namespace nCompiler;
 
 // [[Rcpp::export]]
 Eigen::Tensor<double, 1> TestDropping(
@@ -193,4 +201,18 @@ Eigen::Tensor<double, 3> TestMixedOpWriting(
 ) {
     SubView(cdim2, cstart2, cend2).op(DropDim(cdim1, coffset1).op(x)) = y;
     return x;
+}
+
+/**
+ * operations like x[,3:5,1][8,]...
+ */
+// [[Rcpp::export]]
+Eigen::Tensor<double, 1> TestAltMixedOp(
+    Eigen::Tensor<double, 3> x,
+    Eigen::Index cstart1,
+    Eigen::Index cend1,
+    Eigen::Index coffset2,
+    Eigen::Index coffset3
+) {
+    return DropDim(0,coffset3).op(FullDim().op(FullDim().op(SubView(1,cstart1,cend1).op(DropDim(2,coffset2).op(x)))));
 }

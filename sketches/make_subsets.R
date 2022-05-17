@@ -56,24 +56,6 @@ expect_equivalent(
   )
 )
 
-# An assumption here is that each R-style bracket can be handled via a single
-# Eigen subsetting operation.  So, there will need to either write a) more 
-# expressive C++ code, or b) fancier generation of C++ code from R
-#
-# in general, a strategy for making the decomposition is to work from left 
-# to right, by parsing the operation on the first dimension, then parsing the 
-# operation for the remaining dimensions, paying attention to whether or not 
-# the subsequent operations are working on lower-dimensional objects
-
-# TODO: figure out how we make this a passable object, like a refblock
-# TODO: work on the recursive template to string together complex specs... or 
-#  is this even necessary anymore if we decide that nCompiler will take R code
-#  like y[3,3:5,] and split it into components: y[3,,][3:5,]
-#  but, how will we make sure the dimensions are appropriately dropped?
-
-
-# TODO: deal with ,drop = FALSE (i.e., replace y[3,,] with y[3:3,,])
-
 # verify the decomposition of operations is valid
 expect_identical(
   y[3,3:5,],
@@ -101,3 +83,9 @@ expect_equivalent(
   TestNestedSubviewRval(x = x, cdim1 = 0, cstart1 = 0, cend1 = 2, cdim2 = 1, 
                         cstart2 = 3, cend2 = 5)
 )
+
+expect_equivalent(
+  y[,3:5,1][8,], 
+  TestAltMixedOp(x = y, cstart1 = 2, cend1 = 4, coffset2 = 0, coffset3 = 7)
+)
+
