@@ -4,6 +4,7 @@ Rcpp::sourceCpp('sketches/make_subsets.cpp')
 
 x = matrix(1:100, nrow = 10)
 y = array(1:1e3, rep(10,3))
+z = matrix(1:100, nrow = 10) + runif(n = 1)
 
 ind = 3
 ind2 = 2
@@ -14,7 +15,8 @@ expect_equivalent(
   x[ind,]
 )
 
-# test of passed/reference dimension dropping
+# test of passed/reference dimension dropping (i.e., the dimension being 
+# subsetted can be specified at runtime OR at compile time)
 expect_equivalent(
   TestNestedDroppingLval(
     x = y, 
@@ -56,12 +58,6 @@ expect_equivalent(
   )
 )
 
-# verify the decomposition of operations is valid
-expect_identical(
-  y[3,3:5,],
-  y[3,,][3:5,]
-)
-
 # verify the Eigen implementation is valid
 expect_equivalent(
   y[3,,][3:5,],
@@ -77,15 +73,65 @@ expect_equivalent(
                      cend2 = 4, y = x[3:5,])
 )
 
-# additional subset test
+# Alternatives can support subsets of subsets
 expect_equivalent(
   x[1:3,][,4:6],
   TestNestedSubviewRval(x = x, cdim1 = 0, cstart1 = 0, cend1 = 2, cdim2 = 1, 
                         cstart2 = 3, cend2 = 5)
 )
 
+# Alternatives can support subsets of subsets
 expect_equivalent(
   y[,3:5,1][8,], 
   TestAltMixedOp(x = y, cstart1 = 2, cend1 = 4, coffset2 = 0, coffset3 = 7)
 )
 
+# Alternatives can support subsets of subsets
+expect_equivalent(
+  y[,2,][4,10], 
+  TestImplicitEval(x = y, coffset1 = 1, ci = 3, cj = 9)
+)
+
+# Alternatives can be applied to Tensor operations
+expect_equivalent(
+  (x + z)[1:3,3:5],
+  TestSubsettingOps(x = x, y = z, cxmin = 0, cxmax = 2, cymin = 2, cymax = 4)
+)
+
+expect_equivalent(
+  x[1:3,3:6] + z[1:3,3:6],
+  TestSubsettingThenOps(
+    x = x, y = z[1:3,3:6], cxmin = 0, cxmax = 2, cymin = 2, cymax = 5
+  )
+)
+
+
+#
+# demonstrate needed functionality
+#
+
+library(nCompiler)
+
+nf <- nFunction(
+  fun = function(x) {
+    return(x[1,][3])
+  }, 
+  argTypes = list(x = 'numericMatrix'), 
+  returnType = 'double'
+)
+
+# StridedTensorMap doesn't support subsets of subsets
+expect_error(nCompile(nf))
+
+
+nf <- nFunction(
+  fun = function(x, y) {
+    res <- (x + y)[1:3,3:5]
+    return(res)
+  }, 
+  argTypes = list(x = 'numericMatrix', y = 'numericMatrix'), 
+  returnType = 'numericMatrix'
+)
+
+# StridedTensorMap not designed to be applied to Tensor operations
+expect_error(nCompile(nf))

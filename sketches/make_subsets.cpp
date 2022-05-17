@@ -5,7 +5,9 @@
 // [[Rcpp::plugins(nCompiler_Eigen_plugin)]]
 // [[Rcpp::depends(nCompiler)]]
 
-// GOAL: StridedTensorMap-like functionality via chipping and slicing
+//
+// Proposed code to add to nCompiler
+//
 
 namespace nCompiler {
 
@@ -91,10 +93,28 @@ namespace nCompiler {
 
 }
 
+//
+// End: Proposed code to add to nCompiler
+//
+
+//
+// Tests and demonstrations of proposed subsetting code (contiguous views)
+//
+
 /*
- * examples of ideal c++ code for reproducing various contiguous-block
- * subsetting operations from R.  the strategy is to be able to generate
- * "chainable" code that requires little overhead for use.
+ * Improvements/enhancements over StridedTensorMap:
+ *   1) Offers a code-generation strategy for multiple subsetting, (i.e., x[][])
+ *   2) Can be applied to Tensor objects, or Tensor expressions (i.e., x + y)
+ *
+ * TODO:
+ *   1) Will need to implement logical/integer subsetting by writing a custom
+ *      Tensor op.  We can probably keep things simpler by a) only allowing the
+ *      operation to work on a single dimension at a time, and b) using the
+ *      TensorChipping operation as a template to build from.
+ *   2) Can try to implement "TensorRefBlocks" as nCompiler objects in R by
+ *      using external pointers to the Eigen Tensor operation class created by
+ *      subsetting operations.  The idea is to borrow ideas from R packages that
+ *      implement database connections using external pointers.
  */
 
 using namespace nCompiler;
@@ -235,4 +255,34 @@ Eigen::Tensor<double, 1> TestAltMixedOp(
      Eigen::Index cj
  ) {
     return static_cast<Eigen::Tensor<double, 0> >(DropDim(0,ci).op(DropDim(1,cj).op(FullDim().op(DropDim(1,coffset1).op(FullDim().op(x))))))();
+ }
+
+ /**
+  * operations like (x + y)[1:3,3:5]
+  */
+ // [[Rcpp::export]]
+ Eigen::Tensor<double, 2> TestSubsettingOps(
+     Eigen::Tensor<double, 2> x,
+     Eigen::Tensor<double, 2> y,
+     Eigen::Index cxmin,
+     Eigen::Index cxmax,
+     Eigen::Index cymin,
+     Eigen::Index cymax
+ ) {
+     return SubView(0, cxmin, cxmax).op(SubView(1, cymin, cymax).op(x + y));
+ }
+
+ /**
+  * operations like x[1:3,3:6] + y
+  */
+ // [[Rcpp::export]]
+ Eigen::Tensor<double, 2> TestSubsettingThenOps(
+         Eigen::Tensor<double, 2> x,
+         Eigen::Tensor<double, 2> y,
+         Eigen::Index cxmin,
+         Eigen::Index cxmax,
+         Eigen::Index cymin,
+         Eigen::Index cymax
+         ) {
+    return SubView(0, cxmin, cxmax).op(SubView(1, cymin, cymax).op(x)) + y;
  }
