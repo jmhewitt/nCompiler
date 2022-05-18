@@ -100,6 +100,10 @@ namespace nCompiler {
 
     };
 
+    /**
+     * Implement a slice on N dimensions of a tensor, yielding a subview
+     * of the input
+     */
     template<Eigen::Index N>
     struct SubViewN {
 
@@ -146,7 +150,7 @@ namespace nCompiler {
             auto cfgend = m_config.end();
             for(auto cfg = m_config.begin(); cfg != cfgend; ++cfg) {
                 offsets[(*cfg)[0]] = (*cfg)[1];
-                // TODO: can we refactor to only modify extents once?
+                // must modify extents twice in fn. b/c cfg might not be sorted
                 extents[(*cfg)[0]] = (*cfg)[2] - (*cfg)[1] + 1;
             }
             // execute slice
