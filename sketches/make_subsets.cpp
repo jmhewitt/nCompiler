@@ -100,6 +100,64 @@ namespace nCompiler {
 
     };
 
+    template<Eigen::Index N>
+    struct SubViewN {
+
+        // array elements assumed to be {dimension, start, end}
+        typedef std::array<Eigen::Index, 3> SliceDetails;
+
+        std::array<SliceDetails, N> m_config;
+
+        // couldn't get this to compile with std::array<SliceDetails> as arg
+        SubViewN(std::initializer_list<SliceDetails> config) {
+            // couldn't seem to transfer objects using operator= or memcpy
+            auto cfg = config.begin();
+            auto mcfg = m_config.begin();
+            auto cfgend = config.end();
+            while(cfg != cfgend) {
+                *(mcfg++) = *(cfg++);
+            }
+        }
+
+        template<typename T>
+        auto op(T&& x) -> decltype(
+            // return type will be an Eigen operation
+            x.slice(
+                Eigen::array<Eigen::Index, BaseType<T>::type::NumDimensions>(),
+                Eigen::array<Eigen::Index, BaseType<T>::type::NumDimensions>()
+            )
+        ) {
+            // initialize slice offsets and extents
+            Eigen::array<Eigen::Index, BaseType<T>::type::NumDimensions> offsets;
+            Eigen::array<Eigen::Index, BaseType<T>::type::NumDimensions> extents;
+            offsets.fill(0);
+            extents.fill(0);
+            // get dimension information for the object being subsetted
+            Eigen::TensorRef<
+                Eigen::Tensor<typename BaseType<T>::type::Scalar,
+                BaseType<T>::type::NumDimensions>
+            > xref(x);
+            auto dim = xref.dimensions();
+            // initialize subview to fully span all dimensions
+            for(Eigen::Index i = 0; i < BaseType<T>::type::NumDimensions; ++i) {
+                extents[i] = dim[i];
+            }
+            // transfer slice parameters
+            auto cfgend = m_config.end();
+            for(auto cfg = m_config.begin(); cfg != cfgend; ++cfg) {
+                offsets[(*cfg)[0]] = (*cfg)[1];
+                // TODO: can we refactor to only modify extents once?
+                extents[(*cfg)[0]] = (*cfg)[2] - (*cfg)[1] + 1;
+            }
+            // execute slice
+            return x.slice(offsets, extents);
+        }
+
+        template<typename T>
+        auto operator()(T&& x) -> decltype(op(x)) { return op(x); }
+
+    };
+
 }
 
 //
@@ -316,4 +374,24 @@ Eigen::Tensor<double, 1> TestAltMixedOpListInit(
          Eigen::Index cymax
          ) {
     return SubView(0, cxmin, cxmax).op(SubView(1, cymin, cymax).op(x)) + y;
+ }
+
+
+ Eigen::Tensor<double, 2> maptensor(Eigen::TensorMap<Eigen::Tensor<double, 2> > x) {
+     return x;
+ }
+
+ /**
+ * operations like x[1:3,3:6] + y; alternate implementation
+ */
+ // [[Rcpp::export]]
+ Eigen::Tensor<double, 2> TestAltSubsetting(
+         Eigen::Tensor<double, 2> x,
+         Eigen::Tensor<double, 2> y,
+         Eigen::Index cxmin,
+         Eigen::Index cxmax,
+         Eigen::Index cymin,
+         Eigen::Index cymax
+         ) {
+     return SubViewN<2>({{0, cxmin, cxmax}, {1, cymin, cymax}})(x) + y;
  }

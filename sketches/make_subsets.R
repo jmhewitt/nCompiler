@@ -113,6 +113,13 @@ expect_equivalent(
   )
 )
 
+expect_equivalent(
+  x[1:3,3:6] + z[1:3,3:6],
+  TestAltSubsetting(
+    x = x, y = z[1:3,3:6], cxmin = 0, cxmax = 2, cymin = 2, cymax = 5
+  )
+)
+
 
 #
 # demonstrate needed functionality
