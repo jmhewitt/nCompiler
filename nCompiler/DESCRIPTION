@@ -80,3 +80,4 @@ Collate:
     typeDeclarations.R
     zzz_NC_Predefined.R
 RoxygenNote: 7.3.1
+Roxygen: list(r6 = FALSE)
