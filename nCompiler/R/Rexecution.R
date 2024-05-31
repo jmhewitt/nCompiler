@@ -183,6 +183,42 @@ makeReturnVector <- function(fillValue, length, recycle) {
     }
 }
 
+#' Lower-triangular solver
+#' 
+#' In a \code{nFunction}, \code{nForwardsolve} is identical to 
+#' \code{forwardsolve} that solves the lower-triangular system L %*% x = b when
+#' b represents a matrix or vector
+#'
+#' @details This function is similar to R's \code{\link{forwardsolve}} function, 
+#'   but can be used in a nFunction and compiled using \code{nCompile}.  
+#' 
+#' @param L a lower-triangular matrix
+#' @param b a matrix or vector
+#'
+#' @export
+#' 
+nForwardsolve <- function(L, b) {
+  return(forwardsolve(l = L, x = b))
+}
+
+#' Upper-triangular solver
+#' 
+#' In a \code{nFunction}, \code{nBacksolve} is identical to 
+#' \code{backsolve} that solves the upper-triangular system U %*% x = b when
+#' b represents a matrix or vector
+#'
+#' @details This function is similar to R's \code{\link{backsolve}} function, 
+#'   but can be used in a nFunction and compiled using \code{nCompile}.  
+#' 
+#' @param U an upper-triangular matrix
+#' @param b a matrix or vector
+#'
+#' @export
+#' 
+nBacksolve <- function(U, b) {
+  return(backsolve(r = U, x = b))
+}
+
 #' Spectral Decomposition of a Matrix
 #' 
 #' In a \code{nFunction}, \code{nEigen} is identical to \code{eigen}
