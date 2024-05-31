@@ -62,6 +62,10 @@ SVDDecomp <- nClass(
 )
 
 
+#' nClass containing control list options for stats::optim function
+#' 
+#' Defines C++ bindings for the optim function's control list
+#'
 #' @export
 OptimControlList <- nClass(
   classname = 'OptimControlList',
@@ -84,7 +88,15 @@ OptimControlList <- nClass(
     pgtol = 'double',
     tmax = 'integer',
     temp = 'double',
-    # method to set members to default values
+    
+    #' @details
+    #' Create a new `OptimControlList` object.
+    #' 
+    #' Set members to default values
+    #' 
+    #' @examples
+    #' control <- OptimControlList$new()
+    #' control$initToDefaults()
     initToDefaults = nFunction(
       fun = function() {
         trace <- 0
