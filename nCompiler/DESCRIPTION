@@ -10,8 +10,8 @@ Depends: R (>= 3.3.0)
 Imports:
     methods,R6,Rcpp,pkgKitten,roxygen2
 Suggests:
-    Matrix, spam, SparseM, testthat
-LinkingTo: Rcpp,Rcereal,RcppEigen,RcppParallel,RcppEigenAD
+    Matrix, spam, SparseM, testthat, inline
+LinkingTo: Rcpp,Rcereal,RcppEigen,RcppParallel#,RcppEigenAD
 License: BSD_3_clause + file LICENSE | GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
