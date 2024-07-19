@@ -32,7 +32,8 @@ updateDefaults <- function(defaults, controls) {
       writeCpp = TRUE,
       compileCpp = TRUE,
       useUniqueNameInCode = FALSE,
-      generate_predefined = FALSE
+      generate_predefined = FALSE,
+      useOpenMP = FALSE
     ),
     packagingOptions = list(
       export = TRUE

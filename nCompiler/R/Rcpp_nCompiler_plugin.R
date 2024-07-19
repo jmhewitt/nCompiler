@@ -17,8 +17,13 @@ make_nCompiler_plugin <- function(nCompiler_pluginEnv) {
                                      "-I",
                                      nCompiler_pluginEnv$includePaths)
                                  else
-                                   "")
-    result$env$PKG_CXXFLAGS <- "-std=c++11"
+                                   "",
+                                 # TODO: Auto-configure
+                                 '-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include')
+    # TODO: Auto-configure
+    result$env$PKG_CXXFLAGS <- "-std=c++11 -Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include"
+    # TODO: Auto-configure
+    result$env$LD_FLAGS <- '-L/usr/local/opt/libomp/lib -lomp'
     result$env$PKG_LIBS <- get_nCompLocal_PKG_LIBS_entry()
     ## Makevars doesn't work
     ## result$Makevars <- "CXX_STD=CXX11" does not seem to work

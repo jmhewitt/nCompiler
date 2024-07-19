@@ -6,11 +6,9 @@
 \usage{
 cpp_nCompiler(
   Rcpp_packet,
-  cppfile = NULL,
   dir = file.path(tempdir(), "nCompiler_generatedCode"),
   cacheDir = file.path(tempdir(), "nCompiler_RcppCache"),
   env = parent.frame(),
-  packetList = FALSE,
   write = TRUE,
   compile = TRUE,
   ...
