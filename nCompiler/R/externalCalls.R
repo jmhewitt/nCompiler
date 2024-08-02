@@ -69,7 +69,7 @@
 #' CdemoModel <- compileNimble(demoModel, showCompilerOutput = TRUE)
 #' }
 nExternalCall <- function(
-    prototype, refArgs = list(), returnType, Cfun, headerFile, cppFile, 
+    prototype, refArgs = list(), returnType, Cfun, headerFile, cppFile = NULL, 
     where = parent.frame()
 ) {
     ## construct an nFunction to wrap a call to Cfun
@@ -126,7 +126,10 @@ nExternalCall <- function(
     ans <- nFunction(fun = fun, refArgs = refArgs, check = FALSE, where = where)
     ## Stick header information into the nfMethodRC
     ans@internals$externalHincludes <- paste0('\"',headerFile,'\"')
-    if(grepl(" ", cppFile)) warning("The space in the cppFile name may cause a problem.")
-    ans@internals$externalCPPSourceFiles <- cppFile
+    # allow use of header-only external c++ code
+    if(!is.null(cppFile)) {
+      if(grepl(" ", cppFile)) warning("The space in the cppFile name may cause a problem.")
+      ans@internals$externalCPPSourceFiles <- cppFile
+    }
     return(ans)
 }

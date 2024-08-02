@@ -201,6 +201,10 @@ cpp_nFunction_buildFunction <- function(cppDef,
   cppDef$CPPexternalSourceFiles <- c(
     cppDef$CPPexternalSourceFiles, cppDef$NF_Compiler$NFinternals$externalCPPSourceFiles
   )
+  cppDef$CPPexternalHeaderFiles <- c(
+    cppDef$CPPexternalHeaderFiles,
+    cppDef$NF_Compiler$NFinternals$externalHincludes
+  )
   cppDef$Hincludes <- c(
     cppDef$Hincludes, cppDef$NF_Compiler$NFinternals$externalHincludes
   )

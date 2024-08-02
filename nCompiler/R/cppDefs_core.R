@@ -17,6 +17,7 @@ cppDefinitionClass <- R6::R6Class(
     Hincludes = list(),
     CPPincludes = list(),
     CPPexternalSourceFiles = list(),
+    CPPexternalHeaderFiles = list(),
     initialize = function(...) {
       dotsList <- list(...)
       for(v in names(dotsList))
@@ -26,6 +27,7 @@ cppDefinitionClass <- R6::R6Class(
     getHincludes = function() {return(self$Hincludes)},
     getCPPincludes = function() {return(self$CPPincludes)},
     getCPPexternalSourceFiles = function() {return(self$CPPexternalSourceFiles)},
+    getCPPexternalHeaderFiles = function() {return(self$CPPexternalHeaderFiles)},
     getHpreamble = function() {return(self$Hpreamble)},
     getCPPpreamble = function() {return(self$CPPpreamble)},
     getCPPusings = function() {return(self$CPPusings)},

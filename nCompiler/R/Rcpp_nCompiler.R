@@ -22,6 +22,7 @@ cppDefs_2_RcppPacket <- function(cppDef,
     Hincludes <- cppDef$getHincludes()
     CPPincludes <- cppDef$getCPPincludes()
     CPPexternalSourceFiles <- cppDef$getCPPexternalSourceFiles()
+    CPPexternalHeaderFiles <- cppDef$getCPPexternalHeaderFiles()
     Hpreamble <- cppDef$getHpreamble()
     CPPpreamble <- cppDef$getCPPpreamble()
     
@@ -30,6 +31,7 @@ cppDefs_2_RcppPacket <- function(cppDef,
     Hincludes <- unique(Hincludes)
     CPPincludes <- unique(CPPincludes)
     CPPexternalSourceFiles <- unique(CPPexternalSourceFiles)
+    CPPexternalHeaderFiles <- unique(CPPexternalHeaderFiles)
     Hpreamble <- unique(Hpreamble)
     CPPpreamble <- unique(CPPpreamble)
     CPPusings <- unique(CPPusings)
@@ -84,17 +86,13 @@ cppDefs_2_RcppPacket <- function(cppDef,
       do.call('c',
               lapply(allCppDefs,
                      function(x) x$get_post_cpp_compiler()))
-
-    # identify header files for external source files
-    CPPexternalHeaderFiles <- lapply(CPPexternalSourceFiles, function(cfile) {
-      # get compilation unit's file name
-      unit_name <- sub("([^.]+)\\.[[:alnum:]]+$", "\\1", basename(cfile))
-      # identify compilation unit's header file
-      header_files <- unlist(Hincludes)
-      tgt_header <- header_files[grepl(pattern = unit_name, x = header_files)]
-      # remove quotes from header (quotes needed for c++ #include directive)
-      gsub(pattern = "\"", replacement = '', x = tgt_header)
+    
+    # remove quotes from header strings (quotes only for c++ #include directive)
+    CPPexternalHeaderFiles <- lapply(CPPexternalHeaderFiles, function(hfile) {
+      gsub(pattern = "\"", replacement = '', x = hfile)
     })
+    
+    CPPexternalHeaderFiles <- unique(CPPexternalHeaderFiles)
     
     Rcpp_nCompilerPacket(
       cppContent = cppContent,
