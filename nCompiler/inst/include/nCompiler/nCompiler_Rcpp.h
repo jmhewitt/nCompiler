@@ -248,7 +248,7 @@ class nCompiler_EigenRef_SEXP_converter {
   typedef typename Eigen::array<Index, nInd> IndexArray;
   nCompiler_EigenRef_SEXP_converter(SEXP Sx) :
     RxList_(Sx) {
-    Rprintf("hello to a tensor ref\n");
+    // Rprintf("hello to a tensor ref\n");
     if(!(RxList_.isUsable()))
       Rcpp::stop("Problem: List was not provided for a ref arg.\n");
     Rcpp::List RxList(RxList_);
@@ -275,7 +275,7 @@ class nCompiler_EigenRef_SEXP_converter {
   operator EigenTensorRefType() {
     //    Rcpp::CharacterVector SobjName = SxList[0];
     //    Rcpp::Environment Renv(SxList[1]);
-    Rprintf("Doing the implicit type conversion operator\n");
+    // Rprintf("Doing the implicit type conversion operator\n");
     SEXP Sobj = PROTECT(Renv.get(objStr)); // equiv to Renv[ <1st arg> ]
     if(Sobj == R_NilValue) {
       Rcpp::stop("Problem: Could not obtain object for a ref arg.\n");
@@ -286,7 +286,7 @@ class nCompiler_EigenRef_SEXP_converter {
     return xCopy; // compiler should use copy elision
   }
   ~nCompiler_EigenRef_SEXP_converter() {
-    Rprintf("goodbye to a tensor ref\n");
+    // Rprintf("goodbye to a tensor ref\n");
     SEXP Sputback = PROTECT(Rcpp::wrap(xCopy));
     Renv.assign(objStr,  Sputback);
     UNPROTECT(1);
