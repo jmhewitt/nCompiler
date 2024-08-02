@@ -18,6 +18,23 @@ cat('
 ')
 sink()
 
+# cpp/h test file pair using Rcpp types
+sink('add1-rcpp.h')
+cat('
+#include <Rcpp.h>
+ void my_rcpp_function(Rcpp::NumericVector p, Rcpp::NumericVector & ans);
+')
+sink()
+sink('add1-rcpp.cpp') 
+cat('
+ #include "add1-rcpp.h"
+ void my_rcpp_function(Rcpp::NumericVector p, Rcpp::NumericVector & ans) {
+     /* cat reduces the double slash to single slash */ 
+     ans = p + 1.0;
+ }
+')
+sink()
+
 # header-only test file
 sink('add1-header_only.h')
 cat('
@@ -60,6 +77,26 @@ expect_no_error({
   y = 1:5
   cadd1(x = x, ans = y)
 })
+
+# TODO: Test/implement support for Eigen::TensorMap objects
+# TODO: Test/implement support for StridedTensorMap objects
+
+# TODO: fix conversion errors from Eigen::Tensor<double, 1> to Rcpp::NumericVector
+# # basic nExternalCall variation: Rcpp types in external c++
+# expect_no_error({
+#   Radd1_rcpp <- nExternalCall(
+#     prototype = function(x = numericVector(), ans = 'numericVector') {},
+#     Cfun =  'my_rcpp_function',
+#     refArgs = 'ans',
+#     headerFile = 'add1-rcpp.h',
+#     returnType = void(),
+#     cppFile = 'add1-rcpp.cpp'
+#   )
+#   cadd1_rcpp = nCompile(Radd1_rcpp)
+#   x = 1:5
+#   y = 1:5
+#   cadd1_rcpp(x = x, ans = y)
+# })
 
 # basic nExternalCall variation: full file paths
 expect_no_error({
