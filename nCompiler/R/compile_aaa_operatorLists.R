@@ -859,6 +859,15 @@ assignOperatorDef(
   )
 )
 
+assignOperatorDef(
+  'asReturnSymbol',
+  list(
+    labelAbstractTypes = list(
+      handler = 'asReturnSymbol'
+    )
+  )
+)
+
 ## assignOperatorDef(
 ##   c('list'),
 ##   list(

@@ -1593,6 +1593,21 @@ inLabelAbstractTypesEnv(
   }
 )
 
+inLabelAbstractTypesEnv(
+  ## This is used by nimbleExternalCall.
+  ## When the external call is provided as foo, returning e.g. double(0),
+  ## we end up needing a line of code RETURNVALUE <- foo(args).
+  ## To get the type of RETURNVALUE, we wrap that as RETURNVALUE <- asReturnSymbol(foo(args), type, nDim)
+  asReturnSymbol <- function(code, symTab, auxEnv, handlingInfo) {
+    returnType <- argType2symbol(code$args[[2]]$name)
+    returnType$nDim <- code$args[[3]]$name
+    code$args <- list(code$args[[1]])
+    code$args[[1]]$type <- returnType
+    removeExprClassLayer(code, 1)
+    invisible(NULL)
+  }
+)
+
 sizeProxyForDebugging <- function(code, symTab, auxEnv) {
   browser()
   origValue <- nOptions$debugSizeProcessing

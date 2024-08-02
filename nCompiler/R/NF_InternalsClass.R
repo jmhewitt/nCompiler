@@ -25,6 +25,7 @@ NF_InternalsClass <- R6::R6Class(
     ## It remains to be seen if they are needed in new system.
     externalHincludes = list(), 
     externalCPPincludes = list(),
+    externalCPPSourceFiles = list(),
     initialize = function(fun, ## formerly method
                           name,
                           argTypes = list(),

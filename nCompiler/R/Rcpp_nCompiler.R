@@ -21,6 +21,7 @@ cppDefs_2_RcppPacket <- function(cppDef,
     name <- cppDef$name
     Hincludes <- cppDef$getHincludes()
     CPPincludes <- cppDef$getCPPincludes()
+    CPPexternalSourceFiles <- cppDef$getCPPexternalSourceFiles()
     Hpreamble <- cppDef$getHpreamble()
     CPPpreamble <- cppDef$getCPPpreamble()
     
@@ -28,6 +29,7 @@ cppDefs_2_RcppPacket <- function(cppDef,
     
     Hincludes <- unique(Hincludes)
     CPPincludes <- unique(CPPincludes)
+    CPPexternalSourceFiles <- unique(CPPexternalSourceFiles)
     Hpreamble <- unique(Hpreamble)
     CPPpreamble <- unique(CPPpreamble)
     CPPusings <- unique(CPPusings)
@@ -82,10 +84,23 @@ cppDefs_2_RcppPacket <- function(cppDef,
       do.call('c',
               lapply(allCppDefs,
                      function(x) x$get_post_cpp_compiler()))
+
+    # identify header files for external source files
+    CPPexternalHeaderFiles <- lapply(CPPexternalSourceFiles, function(cfile) {
+      # get compilation unit's file name
+      unit_name <- sub("([^.]+)\\.[[:alnum:]]+$", "\\1", basename(cfile))
+      # identify compilation unit's header file
+      header_files <- unlist(Hincludes)
+      tgt_header <- header_files[grepl(pattern = unit_name, x = header_files)]
+      # remove quotes from header (quotes needed for c++ #include directive)
+      gsub(pattern = "\"", replacement = '', x = tgt_header)
+    })
     
     Rcpp_nCompilerPacket(
       cppContent = cppContent,
       hContent = hContent,
+      CPPexternalSourceFiles = CPPexternalSourceFiles,
+      CPPexternalHeaderFiles = CPPexternalHeaderFiles,
       filebase = filebase,
       post_cpp_compiler = post_cpp_compiler
     )    
@@ -288,6 +303,17 @@ writeCpp_nCompiler <- function(Rcpp_packet,
                   open = "w")
     }
     writeLines(Rcpp_packet$cppContent, con)
+    # For external calls:
+    #  - copy external cpp source files and headers required to compile 
+    #    Rcpp_packet$cppContent
+    dst_dir = dirname(summary(con)$description)
+    invisible(lapply(Rcpp_packet$CPPexternalSourceFiles, function(x) {
+      file.copy(from = x, to = dst_dir, overwrite = TRUE)
+    }))
+    invisible(lapply(Rcpp_packet$CPPexternalHeaderFiles, function(x) {
+      file.copy(from = x, to = dst_dir, overwrite = TRUE)
+    }))
+    # clean up
     if(makeStandardFiles)
       close(con)
   } 

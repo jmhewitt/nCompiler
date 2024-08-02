@@ -43,6 +43,7 @@ Collate:
     cppDefs_utils.R
     cppDefs_variables.R
     developerTools.R
+    externalCalls.R
     local_DLL.R
     NC.R
     NC_Compile.R
@@ -80,4 +81,4 @@ Collate:
     typeDeclarations.R
     compile_zzz_operatorLists.R
     zzz_NC_Predefined.R
-RoxygenNote: 7.1.2
+RoxygenNote: 7.3.2

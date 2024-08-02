@@ -197,12 +197,12 @@ cpp_nFunction_buildFunction <- function(cppDef,
     NF_Compiler$returnSymbol$genCppVar()
   if(!cppDef$classMethod)
     cppDef$commentsAbove <- paste0('// [[Rcpp::export]]')
-  ## For external calls:
-  ## cppDef$CPPincludes <-
-  ##     c(cppDef$CPPincludes,
-  ##       RCfunProc$RCfun$externalCPPincludes)
-  ## cppDef$Hincludes <-
-  ##     c(cppDef$Hincludes,
-  ##       RCfunProc$RCfun$externalHincludes)
+  # For external calls:
+  cppDef$CPPexternalSourceFiles <- c(
+    cppDef$CPPexternalSourceFiles, cppDef$NF_Compiler$NFinternals$externalCPPSourceFiles
+  )
+  cppDef$Hincludes <- c(
+    cppDef$Hincludes, cppDef$NF_Compiler$NFinternals$externalHincludes
+  )
   invisible(NULL)
 }
