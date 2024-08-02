@@ -61,6 +61,41 @@ expect_no_error({
   cadd1(x = x, ans = y)
 })
 
+# basic nExternalCall variation: full file paths
+expect_no_error({
+  Radd1 <- nExternalCall(
+    prototype = function(x = numericVector(), ans = 'numericVector') {},
+    Cfun =  'my_internal_function',
+    refArgs = 'ans',
+    headerFile = file.path(getwd(), 'add1.h'),
+    returnType = void(),
+    cppFile = file.path(getwd(), 'add1.cpp')
+  )
+  cadd1 = nCompile(Radd1)
+  x = 1:5
+  y = 1:5
+  cadd1(x = x, ans = y)
+})
+
+# basic nExternalCall variation: relative file paths
+cwd = getwd()
+setwd(dirname(cwd))
+expect_no_error({
+  Radd1 <- nExternalCall(
+    prototype = function(x = numericVector(), ans = 'numericVector') {},
+    Cfun =  'my_internal_function',
+    refArgs = 'ans',
+    headerFile = file.path(basename(cwd), 'add1.h'),
+    returnType = void(),
+    cppFile = file.path(basename(cwd), 'add1.cpp')
+  )
+  cadd1 = nCompile(Radd1)
+  x = 1:5
+  y = 1:5
+  cadd1(x = x, ans = y)
+})
+setwd(cwd)
+
 # basic nExternalCall variation: basic header-only external c++ code
 expect_no_error({
   Radd1_2 <- nExternalCall(

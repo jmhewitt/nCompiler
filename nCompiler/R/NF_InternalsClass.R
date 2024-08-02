@@ -26,6 +26,7 @@ NF_InternalsClass <- R6::R6Class(
     externalHincludes = list(), 
     externalCPPincludes = list(),
     externalCPPSourceFiles = list(),
+    externalHeaderFiles = list(),
     initialize = function(fun, ## formerly method
                           name,
                           argTypes = list(),

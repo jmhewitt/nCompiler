@@ -87,13 +87,6 @@ cppDefs_2_RcppPacket <- function(cppDef,
               lapply(allCppDefs,
                      function(x) x$get_post_cpp_compiler()))
     
-    # remove quotes from header strings (quotes only for c++ #include directive)
-    CPPexternalHeaderFiles <- lapply(CPPexternalHeaderFiles, function(hfile) {
-      gsub(pattern = "\"", replacement = '', x = hfile)
-    })
-    
-    CPPexternalHeaderFiles <- unique(CPPexternalHeaderFiles)
-    
     Rcpp_nCompilerPacket(
       cppContent = cppContent,
       hContent = hContent,

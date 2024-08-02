@@ -125,7 +125,8 @@ nExternalCall <- function(
     body(fun) <- as.call(allLines)
     ans <- nFunction(fun = fun, refArgs = refArgs, check = FALSE, where = where)
     ## Stick header information into the nfMethodRC
-    ans@internals$externalHincludes <- paste0('\"',headerFile,'\"')
+    ans@internals$externalHeaderFiles <- headerFile
+    ans@internals$externalHincludes <- paste0('\"',basename(headerFile),'\"')
     # allow use of header-only external c++ code
     if(!is.null(cppFile)) {
       if(grepl(" ", cppFile)) warning("The space in the cppFile name may cause a problem.")
