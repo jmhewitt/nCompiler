@@ -868,6 +868,24 @@ assignOperatorDef(
   )
 )
 
+assignOperatorDef(
+  'nConvert',
+  list(
+    labelAbstractTypes = list(
+      handler = 'nConvert'
+    )
+  )
+)
+
+assignOperatorDef(
+  'nUnconvert',
+  list(
+    labelAbstractTypes = list(
+      handler = 'nUnconvert'
+    )
+  )
+)
+
 ## assignOperatorDef(
 ##   c('list'),
 ##   list(

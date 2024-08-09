@@ -210,6 +210,7 @@ inGenCppEnv(
       ## The isEigScalar may not be general.
       ## In any case, we'll want a more general way to manage flex_()
       if (code$name %in% assignmentOperators && isEigScalar(code$args[[1]], allowIndexing=TRUE))
+      if(isFALSE(inherits(code$args[[1]]$type, 'symbolPtr')))
         firstPart <- paste0('flex_(', firstPart, ')')
     }
 

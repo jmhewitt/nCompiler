@@ -26,7 +26,7 @@ cppVarClass <- R6::R6Class(
       if(length(printName) > 0)
         printName <- paste0(printName, collapse = ', ')
       cleanWhite(paste(self$baseType,
-                       self$ptrs,
+                       ptrs,
                        if(isTRUE(self$ref))
                          '&'
                        else

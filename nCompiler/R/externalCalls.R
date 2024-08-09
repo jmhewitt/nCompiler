@@ -70,7 +70,7 @@
 #' }
 nExternalCall <- function(
     prototype, refArgs = list(), returnType, Cfun, headerFile, cppFile = NULL, 
-    where = parent.frame()
+    Cpointers = TRUE, where = parent.frame()
 ) {
     ## construct an nFunction to wrap a call to Cfun
     force(where)
@@ -81,30 +81,32 @@ nExternalCall <- function(
     argsSymTab <- argTypeList2symbolTable(args)
     argNames <- names(args)
     replacedArgNames <- argNames
-    ## Populate a set of lines to convert from NimArr<>s to C pointers...
+    ## Populate a set of lines to convert from Eigen::Tensor to C pointers...
     convertLines <- list()
     ## ... and back again
     unconvertLines <- list()
-    # for(i in seq_along(args)) {
-    #     thisSymbol <- argsSymTab$getSymbolObject( argNames[i] )
-    #     thisType <- thisSymbol$type
-    #     thisNdim <- thisSymbol$nDim
-    #     if(thisNdim > 0) {
-    #         ## for argument "x", make an x_internalPOINTER_
-    #         ptrName <- paste0(argNames[i], '_internalPOINTER_')
-    #         replacedArgNames[i] <- ptrName
-    #         ## Make line "x_internalPOINTER_ <- nimbleConvert(x)"
-    #         newConvertLine <- substitute( A <- nimbleConvert(B), list(A = as.name(ptrName), B = as.name(argNames[i])))
-    #         convertLines[[ length(convertLines) + 1]] <- newConvertLine
-    #         ## Make line "nimbleUnconvert(x_internalPOINTER_, x)"
-    #         newUnconvertLine <- substitute( nimbleUnconvert(A, B), list(A = as.name(ptrName), B = as.name(argNames[i])))
-    #         unconvertLines[[ length(unconvertLines) + 1]] <- newUnconvertLine
-    #     }
-    # }
+    if(isTRUE(Cpointers)) {
+      for(i in seq_along(args)) {
+        thisSymbol <- argsSymTab$getSymbol( argNames[i] )
+        thisType <- thisSymbol$type
+        thisNdim <- thisSymbol$nDim
+        if(thisNdim > 0) {
+            ## for argument "x", make an x_internalPOINTER_
+            ptrName <- paste0(argNames[i], '_internalPOINTER_')
+            replacedArgNames[i] <- ptrName
+            ## Make line "x_internalPOINTER_ <- nConvert(x)"
+            newConvertLine <- substitute( A <- nConvert(B), list(A = as.name(ptrName), B = as.name(argNames[i])))
+            convertLines[[ length(convertLines) + 1]] <- newConvertLine
+            ## Make line "nUnconvert(x_internalPOINTER_, x)"
+            newUnconvertLine <- substitute( nUnconvert(A, B), list(A = as.name(ptrName), B = as.name(argNames[i])))
+            unconvertLines[[ length(unconvertLines) + 1]] <- newUnconvertLine
+        }
+      }
+    }
     # if(inherits(try(returnType, silent = TRUE), 'nimbleType'))
     #     returnType <- nimbleType2argType(returnType)[[1]]
     # else
-    returnType <- returnTypeExpr
+      returnType <- returnTypeExpr
     returnSymbol <- argType2symbol(returnType)
     ## Make the call to Cfun, without yet a return value
     externalCallExpr <- as.call(c(list(as.name(Cfun)), lapply(replacedArgNames, as.name)))

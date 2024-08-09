@@ -549,3 +549,21 @@ symbolEigenMap <- R6::R6Class(
     }
   )
 )
+
+symbolPtr <- R6::R6Class(
+  classname = "symbolPtr",
+  inherit = symbolBasic,
+  portable = TRUE,
+  public = list(
+    shortPrint = function() 'symbolPtr',
+    print = function() writeLines(paste('symbolPtr', self$name)),
+    genCppVar = function(...) {
+        if(self$type == 'integer') cType <- 'int'
+        if(self$type == 'double') cType <- 'double'
+        if(self$type == 'logical') cType <- 'bool'
+        cppVarClass$new(name = self$name,
+                        ptr = 1,
+                        baseType = cType)
+    }
+  )
+)

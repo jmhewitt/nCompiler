@@ -497,6 +497,52 @@ const Xpr& eval(const Xpr & x) {
 }
 
 /**
+ * Return pointer to raw Eigen::Tensor data
+ * 
+ * Helps implement nExternalCall
+ */
+template<int nDim, class T>
+T* nArrPtr_copyIfNeeded(
+    Eigen::Tensor<T, nDim> &orig, 
+    Eigen::Tensor<T, nDim> &possibleCopy
+) {
+  return orig.data();
+}
+
+/**
+ * Return pointer to raw Eigen::Tensor data
+ * 
+ * Helps implement nExternalCall
+ */
+template<int nDim, class T>
+T* nArrPtr_copyIfNeeded(
+    Eigen::TensorMap<Eigen::Tensor<T, nDim>> &orig, 
+    Eigen::Tensor<T, nDim> &possibleCopy
+) {
+    possibleCopy = orig;
+    return possibleCopy.data();
+}
+
+/**
+ * Copies data from one Eigen::Tensor to another
+ * 
+ * Helps implement nExternalCall
+ */
+template<int nDim, class T>
+void nArrPtr_copyBackIfNeeded(
+    T* tptr, Eigen::Tensor<T, nDim> &orig, 
+    Eigen::Tensor<T, nDim> &possibleCopy
+) {
+  if(tptr == orig.data()) return;
+  if(tptr != possibleCopy.data()) {
+    throw std::runtime_error(
+        "nCompiler::nArrPtr_copyBackIfNeeded - Problem in unconverting from an external call.\n"
+    );
+  }
+  orig = possibleCopy;
+}
+
+/**
  * Create an Eigen::Matrix map view into a constant Eigen::Tensor<Scalar, 1>
  * object.  The Eigen::Matrix is assumed to be a column vector.
  *

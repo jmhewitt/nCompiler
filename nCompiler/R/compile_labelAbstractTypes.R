@@ -1607,6 +1607,59 @@ inLabelAbstractTypesEnv(
     invisible(NULL)
   }
 )
+inLabelAbstractTypesEnv(
+  ## This is used by nExternalCall.
+  ## When the external call uses non-scalar variables
+  ## we end up needing a line of code A <- nConvert(B).
+  nConvert <- function(code, symTab, auxEnv, handlingInfo) {
+    inserts <- recurse_labelAbstractTypes(code, symTab, auxEnv, handlingInfo) ## should not normally have an expression other than variable name as the argument, but do this for safety
+    nDim <- code$args[[1]]$type$nDim
+    type <- code$args[[1]]$type$type
+    if(!code$caller$name %in% assignmentOperators) stop(exprClassProcessingErrorMsg(code, 'nConvert can only be used in simple assignment.'), call. = FALSE)
+
+    targetString <- nDeparse(code$args[[1]])
+    targetName <- Rname2CppName(targetString)
+    targetExpr <- parse(text = targetString, keep.source = FALSE)[[1]]
+    copyName <- paste0(targetName, '_nContigCopy')
+    subList <- list(var = targetExpr, copy = as.name(copyName))
+    newCode <- substitute( nArrPtr_copyIfNeeded(var, copy),
+                             subList )
+    ## only necessary if the result is needed
+    if(!symTab$symbolExists( copyName )) {
+        symTab$addSymbol(symbolBasic$new(name = copyName, type = type, nDim = nDim) )
+        # TODO: port exprTypeInfoClass to nCompiler?
+        # assign(copyName, exprTypeInfoClass$new(nDim = nDim, type = type), envir = typeEnv)
+    }
+    newCode <- nParse(newCode)
+    newCode$type <- symbolPtr$new(type = type) ## trick to put a symbol object into sizeExprs for later use
+    setArg(code$caller, code$callerArgID, newCode)
+    invisible(inserts)
+  }
+)
+
+inLabelAbstractTypesEnv(
+  ## This is used by nExternalCall.
+  ## When the external call uses non-scalar variables
+  ## we end up needing a line of code nUnconvert(B)
+  nUnconvert <- function(code, symTab, auxEnv, handlingInfo) {
+    ptrString <- nDeparse(code$args[[1]])
+    ptrName <- Rname2CppName(ptrString)
+    ptrExpr <- parse(text = ptrString, keep.source = FALSE)[[1]]
+
+    targetString <- nDeparse(code$args[[2]])
+    targetName <- Rname2CppName(targetString)
+    targetExpr <- parse(text = targetString, keep.source = FALSE)[[1]]
+
+    copyName <- paste0(targetName, '_nContigCopy')
+    subList <- list(ptr = ptrExpr, var = targetExpr, copy = as.name(copyName))
+    newCode <- substitute( nArrPtr_copyBackIfNeeded(ptr, var, copy),
+                             subList )
+
+    newCode <- nParse(newCode)
+    setArg(code$caller, code$callerArgID, newCode)
+    invisible(NULL)
+  }
+)
 
 sizeProxyForDebugging <- function(code, symTab, auxEnv) {
   browser()
