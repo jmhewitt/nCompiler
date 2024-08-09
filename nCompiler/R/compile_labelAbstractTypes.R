@@ -1631,7 +1631,7 @@ inLabelAbstractTypesEnv(
         # assign(copyName, exprTypeInfoClass$new(nDim = nDim, type = type), envir = typeEnv)
     }
     newCode <- nParse(newCode)
-    newCode$type <- symbolPtr$new(type = type) ## trick to put a symbol object into sizeExprs for later use
+    newCode$type <- symbolPtr$new(type = type)
     setArg(code$caller, code$callerArgID, newCode)
     invisible(inserts)
   }

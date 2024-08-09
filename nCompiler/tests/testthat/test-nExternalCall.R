@@ -58,6 +58,33 @@ cat('
 ')
 sink()
 
+# header-only test file with scalar returns
+sink('my-sum.h')
+cat('
+  #include <unsupported/Eigen/CXX11/Tensor>
+  // [[Rcpp::depends(RcppEigen)]]
+  double my_sum(Eigen::Tensor<double, 1> & x) {
+    Eigen::Tensor<double, 0> res = x.sum();
+    return res(0);
+  }
+')
+sink()
+
+# nExternalCall variation: scalar return
+expect_no_error({
+  Rsum <- nExternalCall(
+    prototype = function(x = numericVector()) { },
+    Cfun =  'my_sum', 
+    Cpointers = FALSE,
+    refArgs = 'x',
+    headerFile = 'my-sum.h',
+    returnType = double(0)
+  )
+  csum = nCompile(Rsum)
+  x = 1:5
+  csum(x)
+})
+
 # basic nExternalCall: void return, tensor ref arg, single .h/.cpp file
 expect_no_error({
   Radd1 <- nExternalCall(

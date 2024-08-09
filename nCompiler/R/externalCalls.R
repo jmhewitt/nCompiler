@@ -106,22 +106,21 @@ nExternalCall <- function(
     # if(inherits(try(returnType, silent = TRUE), 'nimbleType'))
     #     returnType <- nimbleType2argType(returnType)[[1]]
     # else
-      returnType <- returnTypeExpr
+    returnType <- returnTypeExpr
     returnSymbol <- argType2symbol(returnType)
     ## Make the call to Cfun, without yet a return value
     externalCallExpr <- as.call(c(list(as.name(Cfun)), lapply(replacedArgNames, as.name)))
     externalCallLine <- substitute(asReturnSymbol(ECE, type = RStype, nDim = RSnDim), list(ECE = externalCallExpr, RStype = returnSymbol$type, RSnDim = returnSymbol$nDim))
     returnLines <- list()
-    # TODO: implement non-void return
-    # if(returnSymbol$type != 'void') {
-    #     ## Insert the return value as a variable "RETURNVALUE"
-    #     externalCallLine <- substitute(RETURNVALUE <- EXTERNALCALL, list(EXTERNALCALL = externalCallLine))
-    #     ## Insert "return(RETURNVALUE)" and "returnType(<correct type>)"
-    #     returnLines <- list(
-    #         quote(return(RETURNVALUE)),
-    #         substitute(returnType(RT), list(RT = returnType))
-    #     )
-    # }
+    if(returnSymbol$type != 'void') {
+        ## Insert the return value as a variable "RETURNVALUE"
+        externalCallLine <- substitute(RETURNVALUE <- EXTERNALCALL, list(EXTERNALCALL = externalCallLine))
+        ## Insert "return(RETURNVALUE)" and "returnType(<correct type>)"
+        returnLines <- list(
+            quote(return(RETURNVALUE)),
+            substitute(returnType(RT), list(RT = returnType))
+        )
+    }
     ## put all the lines together
     allLines <- c(list(as.name("{")), convertLines, list(externalCallLine), unconvertLines, returnLines)
     body(fun) <- as.call(allLines)
