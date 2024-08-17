@@ -54,6 +54,7 @@ Collate:
     NC_Serialize.R
     NC_SimpleInterface.R
     NC_Utils.R
+    nExternalCall.package.skeleton.R
     NF.R
     NF_Compile.R
     NF_CompilerClass.R
