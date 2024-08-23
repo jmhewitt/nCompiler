@@ -32,3 +32,6 @@ rsconnect/
 *~
 # .Rproj file
 nCompiler.Rproj
+# files created by vignette building steps
+nCompiler/doc
+nCompiler/Meta
